@@ -1,0 +1,217 @@
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous" />
+
+    <link rel="stylesheet" href="../assets/css/voxgraf.css" />
+
+    <!-- Import 3D model viewer -->
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+    <title>VoxGRAF: Fast 3D-Aware Image Synthesis with Sparse Voxel Grids</title>
+
+</head>
+
+<body>
+    <div class="container">
+        <br>
+        <div style="text-align: center;">
+            <h1>VoxGRAF</h1>
+            <h3>Fast 3D-Aware Image Synthesis with Sparse Voxel Grids</h3>
+            <div style="margin-bottom: 10px;">
+                <span style="margin-right: 10px; font-size: 1.2em;"><a href="/">Yuanbo Yang</a></span>
+                <span style="margin-right: 10px; font-size: 1.2em;"><a href="/">Yifei Yang</a></span>
+                <span style="margin-right: 10px; font-size: 1.2em;"><a href="/">Hanlei Guo</a></span>
+                <span style="font-size: 1.2em; margin-right: 10px"><a href="https://person.zju.edu.cn/en/rongxiong" target="_blank"
+                        rel="noopener noreferrer">Rong Xiong</a></span>
+                <span style="font-size: 1.2em; margin-right: 10px"><a href="https://ywang-zju.github.io/" target="_blank"
+                        rel="noopener noreferrer">Yue Wang</a></span>
+                <span style="font-size: 1.2em; margin-right: 10px"><a href="https://yiyiliao.github.io/" target="_blank"
+                        rel="noopener noreferrer">Yiyi Liao</a></span>
+                <!-- <span style="font-size: 1.2em; margin-right: 10px"><a href="http://cvlibs.net/" target="_blank"
+                        rel="noopener noreferrer">Andreas Geiger</a></span> -->
+            </div>
+            <div>
+                <span style="margin-right: 10px; font-size: 1.2em;">Zhejiang University</span>
+            </div>
+            <!--
+      <div>
+        <span style="margin-right: 10px; font-size: 1.2em;">NeurIPS 2022</span>
+      </div>
+      -->
+        </div>
+
+        <!-- <div style="margin-top:20px; margin-bottom:20px;">
+            <div class="row">
+                <div class="col-md-12 col-sm-12 col-xs-12 gallery">
+                    <div class="embed-responsive embed-responsive-16by9">
+                        <video loop="" muted="" preload="" autoplay="">
+                            <source src="../assets/voxgraf/teaser_60fps.mp4" type="video/mp4">
+                            </source>
+                        </video>
+                    </div>
+                </div>
+            </div>
+        </div> -->
+
+        <div class="text-center" style="font-size: 1.5em; margin-bottom: 30px;">
+            <a href="http://arxiv.org/abs/2206.07695" target="_blank" style="margin-right: 20px;"
+                rel="noopener noreferrer">[Paper]</a>
+            <!--<a href="http://www.cvlibs.net/publications/Schwarz2022NeurIPS_supplementary.pdf" target="_blank" style="margin-right: 20px;">[Supplementary]</a>-->
+            <a href="https://github.com/autonomousvision/voxgraf" target="_blank" style="margin-right: 20px;"
+                rel="noopener noreferrer">[Code]</a>
+            <!--
+      <a href="http://autonomousvision.github.io/kilonerf" target="_blank" style="margin-right: 20px;">[Blog]</a>
+      <a href="https://www.youtube.com/watch?v=PNh0LvMpovU&vq=hd1080&autoplay=1" target="_blank" style="margin-right: 20px;">[ICCV Video]</a>
+      -->
+        </div>
+
+        <div style="margin-top:20px;">
+            <div class="p-3 mb-2" style="background-color:#EAEAEA">
+                <div>
+                    <h2 class="text-left text-secondary">
+                        Abstract &amp; Method
+                    </h2>
+                    <p>
+    Generating photorealistic images with controllable camera pose and scene contents is essential for many applications
+    including AR/VR and simulation. Despite the fact that rapid progress has been made in 3D-aware generative models, most
+    existing methods focus on object-centric images and are not applicable to generating urban scenes for free camera
+    viewpoint control and scene editing. To address this challenging task, we propose UrbanGIRAFFE, which uses a coarse 3D
+    panoptic prior, including the layout distribution of uncountable stuff and countable objects, to provide semantic and
+    geometric prior. Our model is compositional and controllable as it breaks down the scene into stuff, objects, and sky.
+    Using stuff prior in the form of semantic voxel grids, we build a conditioned stuff generator that effectively
+    incorporates the coarse semantic and geometry information. The object layout prior further allows us to learn an object
+    generator from cluttered scenes. With proper loss functions, our approach facilitates photorealistic 3D-aware image
+    synthesis with diverse controllability, including large camera movement, stuff editing, and object manipulation. We
+    validate the effectiveness of our model on both synthetic and real-world datasets, including the challenging KITTI-360
+    dataset.
+                    </p>
+                    <div style="margin-top:20px; margin-bottom:20px;">
+                        <img src="../iamges/method.png" class="img-fluid" alt="Responsive image">
+                    </div>
+                    <!-- <p>
+                        In contrast to existing approaches, our method requires only a single forward pass to generate a
+                        full 3D scene. It hence allows for efficient rendering from arbitrary viewpoints while yielding
+                        3D consistent results with high visual fidelity.
+                    </p> -->
+                </div>
+            </div>
+            <!--
+      <div style="margin-top:10px;">
+        <h2 class="text-left text-secondary">
+          Video
+        </h2>
+        <div class="embed-responsive embed-responsive-16by9">
+          <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/PNh0LvMpovU" allowfullscreen></iframe>
+        </div>
+      </div>
+      -->
+        </div>
+
+        <div style="margin-top:20px;">
+            <h2 class="text-left text-secondary">
+                3D-aware Image Synthesis
+            </h2>
+            <div style="margin-top:20px;">
+                <div style="margin-top:20px; margin-bottom:20px;">
+                    <div class="row">
+                        <div class="col-md-12 col-sm-12 col-xs-12 gallery">
+                            <div class="embed-responsive embed-responsive-16by9">
+                                <video controls="" loop="" muted="" preload="">
+                                    <source src="../assets/voxgraf/ffhq_60fps.mp4" type="video/mp4">
+                                    </source>
+                                </video>
+                            </div>
+                        </div>
+                        <div class="col-md-12 col-sm-12 col-xs-12 gallery">
+                            <div class="embed-responsive embed-responsive-16by9">
+                                <video controls="" loop="" muted="" preload="">
+                                    <source src="../assets/voxgraf/afhq_60fps.mp4" type="video/mp4">
+                                    </source>
+                                </video>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- <div style="margin-top:20px;">
+            <h2 class="text-left text-secondary">
+                Sparse Voxel Grids
+            </h2>
+            <model-viewer bounds="tight" src="../assets/voxgraf/seed0017_views16.glb" ar=""
+                ar-modes="webxr scene-viewer quick-look" camera-controls="" poster="../assets/voxgraf/poster_seed17.png"
+                shadow-intensity="2" style="width: 100%; height: 600px; background-color: #404040" exposure="0.2"
+                shadow-softness="1" camera-orbit="330.09deg 74.82deg auto" auto-rotate=""> </model-viewer>
+        </div> -->
+
+        <div style="margin-top:20px;">
+            <h2 class="text-left text-secondary">
+                Background Removal
+            </h2>
+            <div class="row">
+                <div class="col-md-12 col-sm-12 col-xs-12 gallery">
+                    <div class="embed-responsive embed-responsive-16by9">
+                        <video controls="" loop="" muted="" class="embed-responsive-item">
+                            <source src="../assets/voxgraf/bg_removal_60fps.mp4" type="video/mp4">
+                            </source>
+                        </video>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top:20px;">
+            <h2 class="text-left text-secondary">
+                Latent Interpolation
+            </h2>
+            <div class="row">
+                <div class="col-md-12 col-sm-12 col-xs-12 gallery">
+                    <div class="embed-responsive embed-responsive-16by9">
+                        <video controls="" loop="" muted="" class="embed-responsive-item">
+                            <source src="../assets/voxgraf/interpolation_ffhq_60fps.mp4" type="video/mp4">
+                            </source>
+                        </video>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top:20px;">
+            <h2 class="text-left text-secondary">
+                Citation
+            </h2>
+            <pre style="background-color:#EAEAEA">
+        <code>
+          @article{Yang2023,
+            author = {Yuanbo Yang and Yifei Yang and Hanlei Guo and Rong Xiong and Yue Wang and Yiyi Liao},
+            title = {UrbanGIRAFFE: Representing Urban Scenes as Compositional Generative Neural Feature Fields},
+            journal = {ARXIV},
+            year = {2023}
+          }</code>
+      </pre>
+        </div>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>
