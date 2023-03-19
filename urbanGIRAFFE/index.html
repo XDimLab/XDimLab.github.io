@@ -14,7 +14,7 @@
     <!-- Import 3D model viewer -->
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
-    <title>VoxGRAF: Fast 3D-Aware Image Synthesis with Sparse Voxel Grids</title>
+    <title>UrbanGIRAFFE: Representing Urban Scenes as Compositional Generative Neural Feature Fields</title>
 
 </head>
 
@@ -22,8 +22,8 @@
     <div class="container">
         <br>
         <div style="text-align: center;">
-            <h1>VoxGRAF</h1>
-            <h3>Fast 3D-Aware Image Synthesis with Sparse Voxel Grids</h3>
+            <h1>UrbanGIRAFFE</h1>
+            <h3>Representing Urban Scenes as Compositional Generative Neural Feature Fields</h3>
             <div style="margin-bottom: 10px;">
                 <span style="margin-right: 10px; font-size: 1.2em;"><a href="/">Yuanbo Yang</a></span>
                 <span style="margin-right: 10px; font-size: 1.2em;"><a href="/">Yifei Yang</a></span>
@@ -79,11 +79,11 @@
                         Abstract &amp; Method
                     </h2>
                     <p>
-    Generating photorealistic images with controllable camera pose and scene contents is essential for many applications
+    <!-- Generating photorealistic images with controllable camera pose and scene contents is essential for many applications
     including AR/VR and simulation. Despite the fact that rapid progress has been made in 3D-aware generative models, most
     existing methods focus on object-centric images and are not applicable to generating urban scenes for free camera
-    viewpoint control and scene editing. To address this challenging task, we propose UrbanGIRAFFE, which uses a coarse 3D
-    panoptic prior, including the layout distribution of uncountable stuff and countable objects, to provide semantic and
+    viewpoint control and scene editing. To address this challenging task, we propose  -->
+    UrbanGIRAFFE, which uses a coarse 3D panoptic prior, including the layout distribution of uncountable stuff and countable objects, to provide semantic and
     geometric prior. Our model is compositional and controllable as it breaks down the scene into stuff, objects, and sky.
     Using stuff prior in the form of semantic voxel grids, we build a conditioned stuff generator that effectively
     incorporates the coarse semantic and geometry information. The object layout prior further allows us to learn an object
@@ -93,7 +93,7 @@
     dataset.
                     </p>
                     <div style="margin-top:20px; margin-bottom:20px;">
-                        <img src="../iamges/method.png" class="img-fluid" alt="Responsive image">
+                        <img src="../urbanGIRAFFE/assets/images/method.png" class="img-fluid" alt="Responsive image">
                     </div>
                     <!-- <p>
                         In contrast to existing approaches, our method requires only a single forward pass to generate a
@@ -116,7 +116,7 @@
 
         <div style="margin-top:20px;">
             <h2 class="text-left text-secondary">
-                3D-aware Image Synthesis
+                viewpoint Control
             </h2>
             <div style="margin-top:20px;">
                 <div style="margin-top:20px; margin-bottom:20px;">
@@ -124,15 +124,16 @@
                         <div class="col-md-12 col-sm-12 col-xs-12 gallery">
                             <div class="embed-responsive embed-responsive-16by9">
                                 <video controls="" loop="" muted="" preload="">
-                                    <source src="../assets/voxgraf/ffhq_60fps.mp4" type="video/mp4">
+                                    <source src="../urbanGIRAFFE/assets/videos/move_forward_video_final.mp4" type="video/mp4">
                                     </source>
                                 </video>
                             </div>
                         </div>
+            
                         <div class="col-md-12 col-sm-12 col-xs-12 gallery">
                             <div class="embed-responsive embed-responsive-16by9">
                                 <video controls="" loop="" muted="" preload="">
-                                    <source src="../assets/voxgraf/afhq_60fps.mp4" type="video/mp4">
+                                    <source src="../urbanGIRAFFE/assets/videos/interpolate_camera_video_final.mp4" type="video/mp4">
                                     </source>
                                 </video>
                             </div>
@@ -152,15 +153,46 @@
                 shadow-softness="1" camera-orbit="330.09deg 74.82deg auto" auto-rotate=""> </model-viewer>
         </div> -->
 
+
         <div style="margin-top:20px;">
             <h2 class="text-left text-secondary">
-                Background Removal
+                Building to Tree
             </h2>
             <div class="row">
                 <div class="col-md-12 col-sm-12 col-xs-12 gallery">
                     <div class="embed-responsive embed-responsive-16by9">
                         <video controls="" loop="" muted="" class="embed-responsive-item">
-                            <source src="../assets/voxgraf/bg_removal_60fps.mp4" type="video/mp4">
+                            <source src="../urbanGIRAFFE/assets/videos/building2tree_video_final.mp4" type="video/mp4">
+                            </source>
+                        </video>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="margin-top:20px;">
+            <h2 class="text-left text-secondary">
+                Road to Grass
+            </h2>
+            <div class="row">
+                <div class="col-md-12 col-sm-12 col-xs-12 gallery">
+                    <div class="embed-responsive embed-responsive-16by9">
+                        <video controls="" loop="" muted="" class="embed-responsive-item">
+                            <source src="../urbanGIRAFFE/assets/videos/road2grass_video_final.mp4" type="video/mp4">
+                            </source>
+                        </video>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="margin-top:20px;">
+            <h2 class="text-left text-secondary">
+                Building Lower
+            </h2>
+            <div class="row">
+                <div class="col-md-12 col-sm-12 col-xs-12 gallery">
+                    <div class="embed-responsive embed-responsive-16by9">
+                        <video controls="" loop="" muted="" class="embed-responsive-item">
+                            <source src="../urbanGIRAFFE/assets/videos/building_lower_video_final.mp4" type="video/mp4">
                             </source>
                         </video>
                     </div>
@@ -170,13 +202,29 @@
 
         <div style="margin-top:20px;">
             <h2 class="text-left text-secondary">
-                Latent Interpolation
+                Object Editing
             </h2>
             <div class="row">
                 <div class="col-md-12 col-sm-12 col-xs-12 gallery">
                     <div class="embed-responsive embed-responsive-16by9">
                         <video controls="" loop="" muted="" class="embed-responsive-item">
-                            <source src="../assets/voxgraf/interpolation_ffhq_60fps.mp4" type="video/mp4">
+                            <source src="../urbanGIRAFFE/assets/videos/object_editing_video_final.mp4" type="video/mp4">
+                            </source>
+                        </video>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top:20px;">
+            <h2 class="text-left text-secondary">
+                3D-Aware Image Synthesis on CLEVR-W
+            </h2>
+            <div class="row">
+                <div class="col-md-12 col-sm-12 col-xs-12 gallery">
+                    <div class="embed-responsive embed-responsive-16by9">
+                        <video controls="" loop="" muted="" class="embed-responsive-item">
+                            <source src="../urbanGIRAFFE/assets/videos/clevr_video_final.mp4" type="video/mp4">
                             </source>
                         </video>
                     </div>
