@@ -1,0 +1,826 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+  
+  <title>
+    REFRAME: Reflective Real-time Rendering with Memory-Efficient Mesh
+  </title>
+
+
+
+  <!-- bootstrap -->
+  <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+  <!-- icon -->
+  <script src="https://kit.fontawesome.com/87dc3e863a.js" crossorigin="anonymous"></script>
+  <!-- font -->
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" type="text/css">
+  
+  <script src="https://dorverbin.github.io/refnerf/js/video_comparison.js"></script>
+  <link rel="stylesheet" href="./select.css">
+  
+
+
+<script>
+
+
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const loadMoreBtn = document.querySelector('.load-more');
+    const hideRowsBtn = document.querySelector('.hide-rows');
+  
+    loadMoreBtn.addEventListener('click', function () {
+      document.querySelectorAll('.hidden-rows').forEach(function (row) {
+        row.style.display = 'flex'; // 或者 'block', 取决于您的布局
+      });
+      loadMoreBtn.style.display = 'none';
+      hideRowsBtn.style.display = 'inline-block'; // 保持和 loadMoreBtn 相同的显示类型
+    });
+  
+    hideRowsBtn.addEventListener('click', function () {
+      document.querySelectorAll('.hidden-rows').forEach(function (row) {
+        row.style.display = 'none';
+      });
+      hideRowsBtn.style.display = 'none';
+      loadMoreBtn.style.display = 'inline-block';
+    });
+  });
+  
+</script>
+
+
+
+
+  
+<!-- <script> 
+  document.addEventListener('DOMContentLoaded', function () {
+    const loadMoreBtn = document.querySelector('.load-more');
+    const hideRowsBtn = document.querySelector('.hide-rows');
+  
+    loadMoreBtn.addEventListener('click', function () {
+      // 显示所有隐藏的排
+      document.querySelectorAll('.hidden-rows').forEach(function (row) {
+        row.style.display = 'flex';
+      });
+      // 隐藏"加载更多"按钮，显示"收起"按钮
+      this.style.display = 'none';
+      hideRowsBtn.style.display = 'block'; // 显示向上箭头
+    });
+  
+    hideRowsBtn.addEventListener('click', function () {
+      // 隐藏后三排
+      document.querySelectorAll('.hidden-rows').forEach(function (row) {
+        row.style.display = 'none';
+      });
+      // 隐藏"收起"按钮，显示"加载更多"按钮
+      this.style.display = 'none';
+      loadMoreBtn.style.display = 'block'; // 显示向下箭头
+    });
+  });
+  
+</script> -->
+
+
+
+  <style>
+    /* 仅针对视频容器的样式 */
+    #results-carousel-vertical5 {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+    }
+  
+    #results-carousel-vertical2 .cmpcontent {
+      flex: 0 0 16.66%; /* 设置flex-basis为16.66%，确保每行可放置6个视频 */
+      box-sizing: border-box; /* 确保宽度包括padding和border */
+      padding: 5px; /* 根据需要调整间距 */
+    }
+  
+    #results-carousel-vertical2 .cmpcontent video {
+      width: 100%; /* 视频宽度自适应容器宽度 */
+      display: block; /* 避免默认的inline布局可能导致的问题 */
+    }
+  </style>
+
+  <!-- Google tag (gtag.js) -->
+<!-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-1FWSVCGZTG"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+
+function gtag() {
+dataLayer.push(arguments);
+}
+
+gtag('js', new Date());
+
+gtag('config', 'G-1FWSVCGZTG');
+</script> -->
+
+
+
+
+
+<!-- <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+rel="stylesheet">
+
+<link rel="stylesheet" href="./css/bulma.min.css">
+<link rel="stylesheet" href="./css/bulma-carousel.min.css">
+<link rel="stylesheet" href="./css/bulma-slider.min.css">
+<link rel="stylesheet" href="./css/twentytwenty.css">
+<link rel="stylesheet" href="./css/index.css">
+<link rel="icon" href="./images/favicon.svg">
+
+<script src="./js/jquery-3.2.1.min.js"></script>
+<script src="./js/jquery.event.move.js"></script>
+<script src="./js/jquery.twentytwenty.js"></script>
+<script src="./js/bulma-carousel.min.js"></script>
+<script src="./js/bulma-slider.min.js"></script>
+<script src="./js/fontawesome.all.min.js"></script>
+
+  <style>
+    body {
+      background: rgb(255, 255, 255) no-repeat fixed top left;
+      font-family:'Open Sans', sans-serif;
+    }
+  </style> -->
+
+
+
+
+<!--MathJax-->
+<script>
+window.MathJax = {
+tex: {
+inlineMath: [['$', '$'], ['\\(', '\\)']]
+},
+svg: {
+fontCache: 'global'
+}
+};
+</script>
+<script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+rel="stylesheet">
+
+
+
+
+<link rel="stylesheet" href="https://xdimlab.github.io/hugs_website/css/bulma.min.css">
+<link rel="stylesheet" href="https://xdimlab.github.io/hugs_website/css/bulma-carousel.min.css">
+<link rel="stylesheet" href="https://xdimlab.github.io/hugs_website/css/bulma-slider.min.css">
+<link rel="stylesheet" href="https://xdimlab.github.io/hugs_website/css/twentytwenty.css">
+<link rel="stylesheet" href="https://xdimlab.github.io/hugs_website/css/index.css">
+<link rel="icon" href="https://xdimlab.github.io/hugs_website/images/favicon.svg">
+
+<script src="https://xdimlab.github.io/hugs_website/js/jquery-3.2.1.min.js"></script>
+<script src="https://xdimlab.github.io/hugs_website/js/jquery.event.move.js"></script>
+<script src="https://xdimlab.github.io/hugs_website/js/jquery.twentytwenty.js"></script>
+<script src="https://xdimlab.github.io/hugs_website/js/bulma-carousel.min.js"></script>
+<script src="https://xdimlab.github.io/hugs_website/js/bulma-slider.min.js"></script>
+<script src="https://xdimlab.github.io/hugs_website/js/fontawesome.all.min.js"></script>
+
+<!-- 
+<link rel="stylesheet" href="./css/bulma.min.css">
+<link rel="stylesheet" href="./css/bulma-carousel.min.css">
+<link rel="stylesheet" href="./css/bulma-slider.min.css">
+<link rel="stylesheet" href="./css/twentytwenty.css">
+<link rel="stylesheet" href="./css/index.css">
+<link rel="icon" href="./images/favicon.svg">
+
+<script src="./js/jquery-3.2.1.min.js"></script>
+<script src="./js/jquery.event.move.js"></script>
+<script src="./js/jquery.twentytwenty.js"></script>
+<script src="./js/bulma-carousel.min.js"></script>
+<script src="./js/bulma-slider.min.js"></script>
+<script src="./js/fontawesome.all.min.js"></script> -->
+
+
+
+</head>
+
+<body>
+  <!-- cover -->
+  <section>
+    <div class="jumbotron text-center mt-0" style="padding-bottom: 0px;">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col">
+            <!-- paper title -->
+            <h2 style="font-size:50px;">
+              <strong>REFRAME</strong>: <strong>REF</strong>lective Surface<br> <strong>R</strong>e<strong>A</strong>l-Time
+              Rendering for <strong>M</strong>obil<strong>E</strong> Devices
+            </h2>
+            
+            <!-- publication -->
+            <!-- <h4 style="color:#6e6e6e;"> ArXiv 2023 </h4> -->
+            <hr>
+            <!-- authors -->
+            <h6> 
+                <!-- <a href="https://me.kiui.moe/" target="_blank">XXX</a><sup>1</sup>, 
+                 <a href="https://hangz-nju-cuhk.github.io/" target="_blank">XXX</a><sup>2</sup>, 
+                 <a href="https://charlescxk.github.io/" target="_blank">XXX</a><sup>1</sup>,  -->
+                 <div class="is-size-5 publication-authors" style=" font-size: 25px;">
+                  <span class="author-block">
+                  <a href="https://github.com/MARVELOUSJI" target="_blank" rel="noopener noreferrer">
+                  Chaojie Ji</a><sup>1</sup>,
+                  </span>
+                  <span class="author-block">
+                  <a href="" target="_blank" rel="noopener noreferrer">
+                  Yufeng Li</a><sup>2</sup>,
+                  </span>
+                  <span class="author-block">
+                  <a href="https://yiyiliao.github.io/" target="_blank" rel="noopener noreferrer">
+                  Yiyi Liao </a><sup>1</sup>,
+                  </span>
+                  </div>
+                  <div class="is-size-5 publication-authors"style=" font-size: 25px;">
+                    <span class="author-block"><sup>1</sup>Zhejiang University,</span>
+                    <span class="author-block"><sup>2</sup>University of Electronic Science and Technology of China</span>
+                    <!-- <span class="author-block"><sup>3</sup>University of Tübingen,</span> -->
+                    <!-- <span class="author-block"><sup>4</sup>Tübingen AI Center</span> -->
+                  </div>
+                 <br>
+                 <br>
+            <!-- <p> <sup>1</sup> XXX University &nbsp; -->
+                <br>
+            </p>
+            
+
+
+
+              <div class="column has-text-centered">
+                <div class="publication-links">
+                  <span class="link-block">
+                    <a href="https://arxiv.org/abs/2403.12722" target="_blank" rel="noopener noreferrer"
+                       class="external-link button is-normal is-rounded is-dark">
+                      <span class="icon">
+                          <i class="fas fa-file-pdf" style="color: orangered"></i>
+                      </span>
+                      <span>ArXiv</span>
+                    </a>
+                  </span>
+                  <!-- Code Link. -->
+                  <span class="link-block">
+                    <a href="" target="_blank" rel="noopener noreferrer"
+                       class="external-link button is-normal is-rounded is-dark">
+                      <span class="icon">
+                          <i class="fab fa-github"></i>
+                      </span>
+                      <span>Code (Coming Soon)</span>
+                    </a>
+                  </span>
+                </div>
+              </div>
+              <!-- link to models -->
+              <!-- <div style="margin: 5px;">
+                <p class="mb-5"><a class="btn btn-large btn-dark" href="https://huggingface.co/xiongdi/maskngp" role="button" target="_blank">
+                <i class="fa fa-database"></i> 
+                Models 
+                </a> </p>
+              </div> 
+            </div> -->
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- abstract -->
+  <section>
+    <div class="container">
+      <div class="row">
+        <div class="col-12 text-center">
+          <!-- <h3>Abstract</h3> -->
+          <h3 class="title has-text-centered">
+            Abstract 
+           </h3>
+          <div class="row justify-content-center" style="align-items:center; display:flex;">
+            <div> 
+               <img src="./images/teaser.jpg" alt="teaser" class="img-responsive" width="100%"/> 
+            </div>
+          </div>
+          <br>
+        </div>
+          <p class="text-justify">
+            This work tackles the challenging task of achieving real-time
+novel view synthesis on various scenes, including highly reflective objects
+and unbounded outdoor scenes. Existing real-time rendering methods,
+especially those based on meshes, often have subpar performance in
+modeling surfaces with rich view-dependent appearances. Our key idea
+lies in leveraging meshes for rendering acceleration while incorporating a
+novel approach to parameterize view-dependent information. We decompose
+the color into diffuse and specular, and model the specular color in
+the reflected direction based on a neural environment map. Our experiments
+demonstrate that our method achieves comparable reconstruction
+quality for highly reflective surfaces compared to state-of-the-art offline
+methods, while also efficiently enabling real-time rendering on edge devices
+such as smartphones.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <br>
+
+  <div class="container">
+    <div class="row">
+    <div class="col-12 text-center">
+    <!-- <h3>Video</h3> -->
+    <h3 class="title has-text-centered">
+      Video
+     </h3>
+    <div class="row justify-content-center" style="align-items:center; display:flex;">
+    <video width="100%" controls autoplay loop style="margin: 5px;"> <source src="./images/video.mp4" type="video/mp4"> </video>
+    </div>
+    </div>
+    </div>
+    </section>
+    <br>
+  <style>
+    body {
+      background: rgb(255, 255, 255) no-repeat fixed top left;
+      font-family:'Open Sans', sans-serif;
+    }
+  </style>
+
+
+
+
+
+<!-- <div class="row">
+  <div class="col-md-8 col-md-offset-2">
+    <h3 class="title has-text-centered">
+      Comparison with Baselines 
+     </h3>
+      <div class="video-compare-container">
+          <video class="video" id="musclecar" loop playsinline autoPlay muted src="./images/compare_vid/Ours_GT_helmet.mp4" onplay="resizeAndPlay(this)"></video>          
+          <canvas height=0 class="videoMerge" id="musclecarMerge"></canvas>
+      </div>
+</div>
+</div> -->
+<h3 class="title has-text-centered">
+  Comparison with Baselines 
+ </h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="container-fluid">
+  <!-- <div class="row">
+    <div class="video-flex-container"> -->
+      <!-- 前三排的视频容器... -->
+
+
+
+      
+
+
+
+
+
+        <div class="row">
+      
+          <div class="video-flex-container">
+            <!-- 视频和 canvas 容器，重复五次 -->
+            <div class="video-container">
+              <video class="video" id="video16" loop playsinline autoPlay muted src="./images/compare_vid/Ours_GT_toaster.mp4" onplay="resizeAndPlay(this)"></video>
+              <canvas class="videoMerge" id="video16Merge"></canvas>
+            </div>
+      
+            <div class="video-container">
+              <video class="video" id="video17" loop playsinline autoPlay muted src="./images/compare_vid/Ours_3DGS_toaster.mp4" onplay="resizeAndPlay(this)"></video>
+              <canvas class="videoMerge" id="video17Merge"></canvas>
+            </div>
+      
+            <div class="video-container">
+              <video class="video" id="video18" loop playsinline autoPlay muted src="./images/compare_vid/Ours_NvDiffrec_toaster.mp4" onplay="resizeAndPlay(this)"></video>
+              <canvas class="videoMerge" id="video18Merge"></canvas>
+            </div>
+      
+            <div class="video-container">
+              <video class="video" id="video19" loop playsinline autoPlay muted src="./images/compare_vid/Ours_MobileNeRF_toaster.mp4" onplay="resizeAndPlay(this)"></video>
+              <canvas class="videoMerge" id="video19Merge"></canvas>
+            </div>
+      
+            <div class="video-container">
+              <video class="video" id="video20" loop playsinline autoPlay muted src="./images/compare_vid/Ours_NeRF2Mesh_toaster.mp4" onplay="resizeAndPlay(this)"></video>
+              <canvas class="videoMerge" id="video20Merge"></canvas>
+            </div>
+            <!-- 更多视频容器... -->
+          </div>
+        </div>
+      
+        <div class="row">
+          
+          <div class="video-flex-container">
+            <!-- 视频和 canvas 容器，重复五次 -->
+            <div class="video-container">
+              <video class="video" id="video6" loop playsinline autoPlay muted src="./images/compare_vid/Ours_GT_ball.mp4" onplay="resizeAndPlay(this)"></video>
+              <canvas class="videoMerge" id="video6Merge"></canvas>
+            </div>
+      
+            <div class="video-container">
+              <video class="video" id="video7" loop playsinline autoPlay muted src="./images/compare_vid/Ours_3DGS_ball.mp4" onplay="resizeAndPlay(this)"></video>
+              <canvas class="videoMerge" id="video7Merge"></canvas>
+            </div>
+      
+            <div class="video-container">
+              <video class="video" id="video8" loop playsinline autoPlay muted src="./images/compare_vid/Ours_NvDiffrec_ball.mp4" onplay="resizeAndPlay(this)"></video>
+              <canvas class="videoMerge" id="video8Merge"></canvas>
+            </div>
+      
+            <div class="video-container">
+              <video class="video" id="video9" loop playsinline autoPlay muted src="./images/compare_vid/Ours_MobileNeRF_ball.mp4" onplay="resizeAndPlay(this)"></video>
+              <canvas class="videoMerge" id="video9Merge"></canvas>
+            </div>
+      
+            <div class="video-container">
+              <video class="video" id="video10" loop playsinline autoPlay muted src="./images/compare_vid/Ours_NeRF2Mesh_ball.mp4" onplay="resizeAndPlay(this)"></video>
+              <canvas class="videoMerge" id="video10Merge"></canvas>
+            </div>
+            <!-- 更多视频容器... -->
+          </div>
+        </div>
+      
+      
+
+
+  <!-- 在这里放置箭头按钮 -->
+  <!-- <div class="row">
+    <div class="col-12 text-center">
+      <button class="load-more">↓(Click to show more)</button>
+    </div>
+  </div> -->
+
+
+
+<!-- 箭头按钮 -->
+<div class="row">
+  <div class="col-12 text-center">
+    <button class="btn-arrows load-more">↓ (Click to show more)</button>
+    <!-- <button class="btn-arrows hide-rows" style="display: none;">↑ (Click to hide)</button> -->
+  </div>
+</div>
+
+
+
+
+
+  <div class="row hidden-rows">
+    <div class="video-flex-container">
+      <!-- 视频和 canvas 容器，重复五次 -->
+      <div class="video-container">
+        <video class="video" id="video1" loop playsinline autoPlay muted src="./images/compare_vid/Ours_GT_helmet.mp4" onplay="resizeAndPlay(this)"></video>
+        <canvas class="videoMerge" id="video1Merge"></canvas>
+      </div>
+
+      <div class="video-container">
+        <video class="video" id="video2" loop playsinline autoPlay muted src="./images/compare_vid/Ours_3DGS_helmet.mp4" onplay="resizeAndPlay(this)"></video>
+        <canvas class="videoMerge" id="video2Merge"></canvas>
+      </div>
+
+      <div class="video-container">
+        <video class="video" id="video3" loop playsinline autoPlay muted src="./images/compare_vid/Ours_NvDiffrec_helmet.mp4" onplay="resizeAndPlay(this)"></video>
+        <canvas class="videoMerge" id="video3Merge"></canvas>
+      </div>
+
+      <div class="video-container">
+        <video class="video" id="video4" loop playsinline autoPlay muted src="./images/compare_vid/Ours_MobileNeRF_helmet.mp4" onplay="resizeAndPlay(this)"></video>
+        <canvas class="videoMerge" id="video4Merge"></canvas>
+      </div>
+
+      <div class="video-container">
+        <video class="video" id="video5" loop playsinline autoPlay muted src="./images/compare_vid/Ours_NeRF2Mesh_helmet.mp4" onplay="resizeAndPlay(this)"></video>
+        <canvas class="videoMerge" id="video5Merge"></canvas>
+      </div>
+      <!-- 更多视频容器... -->
+    </div>
+  </div>
+
+
+
+
+  <div class="row hidden-rows">
+          
+    <div class="video-flex-container">
+      <!-- 视频和 canvas 容器，重复五次 -->
+      <div class="video-container">
+        <video class="video" id="video11" loop playsinline autoPlay muted src="./images/compare_vid/Ours_GT_coffee.mp4" onplay="resizeAndPlay(this)"></video>
+        <canvas class="videoMerge" id="video11Merge"></canvas>
+      </div>
+
+      <div class="video-container">
+        <video class="video" id="video12" loop playsinline autoPlay muted src="./images/compare_vid/Ours_3DGS_coffee.mp4" onplay="resizeAndPlay(this)"></video>
+        <canvas class="videoMerge" id="video12Merge"></canvas>
+      </div>
+
+      <div class="video-container">
+        <video class="video" id="video13" loop playsinline autoPlay muted src="./images/compare_vid/Ours_NvDiffrec_coffee.mp4" onplay="resizeAndPlay(this)"></video>
+        <canvas class="videoMerge" id="video13Merge"></canvas>
+      </div>
+
+      <div class="video-container">
+        <video class="video" id="video14" loop playsinline autoPlay muted src="./images/compare_vid/Ours_MobileNeRF_coffee.mp4" onplay="resizeAndPlay(this)"></video>
+        <canvas class="videoMerge" id="video14Merge"></canvas>
+      </div>
+
+      <div class="video-container">
+        <video class="video" id="video15" loop playsinline autoPlay muted src="./images/compare_vid/Ours_NeRF2Mesh_coffee.mp4" onplay="resizeAndPlay(this)"></video>
+        <canvas class="videoMerge" id="video15Merge"></canvas>
+      </div>
+      <!-- 更多视频容器... -->
+    </div>
+  </div>
+
+  <div class="row hidden-rows">
+    
+    <div class="video-flex-container">
+      <!-- 视频和 canvas 容器，重复五次 -->
+      <div class="video-container">
+        <video class="video" id="video21" loop playsinline autoPlay muted src="./images/compare_vid/Ours_GT_car.mp4" onplay="resizeAndPlay(this)"></video>
+        <canvas class="videoMerge" id="video21Merge"></canvas>
+      </div>
+
+      <div class="video-container">
+        <video class="video" id="video22" loop playsinline autoPlay muted src="./images/compare_vid/Ours_3DGS_car.mp4" onplay="resizeAndPlay(this)"></video>
+        <canvas class="videoMerge" id="video22Merge"></canvas>
+      </div>
+
+      <div class="video-container">
+        <video class="video" id="video23" loop playsinline autoPlay muted src="./images/compare_vid/Ours_NvDiffrec_car.mp4" onplay="resizeAndPlay(this)"></video>
+        <canvas class="videoMerge" id="video23Merge"></canvas>
+      </div>
+
+      <div class="video-container">
+        <video class="video" id="video24" loop playsinline autoPlay muted src="./images/compare_vid/Ours_MobileNeRF_car.mp4" onplay="resizeAndPlay(this)"></video>
+        <canvas class="videoMerge" id="video24Merge"></canvas>
+      </div>
+
+      <div class="video-container">
+        <video class="video" id="video25" loop playsinline autoPlay muted src="./images/compare_vid/Ours_NeRF2Mesh_car.mp4" onplay="resizeAndPlay(this)"></video>
+        <canvas class="videoMerge" id="video25Merge"></canvas>
+      </div>
+      <!-- 更多视频容器... -->
+    </div>
+  </div>
+
+
+
+  <div class="row hidden-rows">
+    
+    <div class="video-flex-container">
+      <!-- 视频和 canvas 容器，重复五次 -->
+      <div class="video-container">
+        <video class="video" id="video26" loop playsinline autoPlay muted src="./images/compare_vid/Ours_GT_teapot.mp4" onplay="resizeAndPlay(this)"></video>
+        <canvas class="videoMerge" id="video26Merge"></canvas>
+      </div>
+
+      <div class="video-container">
+        <video class="video" id="video27" loop playsinline autoPlay muted src="./images/compare_vid/Ours_3DGS_teapot.mp4" onplay="resizeAndPlay(this)"></video>
+        <canvas class="videoMerge" id="video27Merge"></canvas>
+      </div>
+
+      <div class="video-container">
+        <video class="video" id="video28" loop playsinline autoPlay muted src="./images/compare_vid/Ours_NvDiffrec_teapot.mp4" onplay="resizeAndPlay(this)"></video>
+        <canvas class="videoMerge" id="video28Merge"></canvas>
+      </div>
+
+      <div class="video-container">
+        <video class="video" id="video29" loop playsinline autoPlay muted src="./images/compare_vid/Ours_MobileNeRF_teapot.mp4" onplay="resizeAndPlay(this)"></video>
+        <canvas class="videoMerge" id="video29Merge"></canvas>
+      </div>
+
+      <div class="video-container">
+        <video class="video" id="video30" loop playsinline autoPlay muted src="./images/compare_vid/Ours_NeRF2Mesh_teapot.mp4" onplay="resizeAndPlay(this)"></video>
+        <canvas class="videoMerge" id="video30Merge"></canvas>
+      </div>
+      <!-- 更多视频容器... -->
+    </div>
+  </div>
+
+
+<!-- 新增的向上箭头按钮，初始隐藏 -->
+<!-- <div class="row">
+  <div class="col-12 text-center">
+    <button class="hide-rows" style="display: none;">↑(Click to hide)</button>
+  </div>
+</div> -->
+
+
+<div class="row">
+  <div class="col-12 text-center">
+    <!-- <button class="btn-arrows load-more">↓ (Click to show more)</button> -->
+    <button class="btn-arrows hide-rows" style="display: none;">↑ (Click to hide)</button>
+  </div>
+</div>
+
+
+
+
+
+
+    <!-- </div> -->
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <!-- comparison results -->
+  <section>
+    <div class="container">
+      <div class="row">
+        <div class="col-12 text-center">
+            <!-- <h3>Real-time Online Interactive Viewer Demo</h3> -->
+            <h3 class="title has-text-centered">
+              Real-time Online Interactive Viewer Demo
+             </h3>
+            <hr style="margin-top:0px">
+
+            <!-- <br> <h4><b>Helmet</b></h4> -->
+            <br> <h4 class="title has-text-centered"> <b>Shinny Blender Dataset</b> </h4>
+            <table style="table-layout: fixed;">
+              <tbody>
+                <tr>
+                  <td style="text-align: center; "> <a href="render_ssaa.html?scene=helmet" style="text-decoration: none"> <img src="./images/helmet.png" alt="helmet" class="img-responsive" width="75%"/> <div>helmet</div> </a> </td>
+                  <td style="text-align: center; "> <a href="render_ssaa.html?scene=car" style="text-decoration: none"> <img src="./images/car.png" alt="car" class="img-responsive" width="75%"/> <div>car</div> </a> </td>
+                  <td style="text-align: center; "> <a href="render_ssaa.html?scene=coffee" style="text-decoration: none"> <img src="./images/coffee.png" alt="coffee" class="img-responsive" width="75%"/> <div>coffee</div> </a> </td>
+                  <!-- <td width="25%"> <a href="render_bias2.html?scene=helmet" style="text-decoration: none"> <img src="./images/helmet.jpg" alt="helmet" class="img-responsive" width="100%"/> <b>helmet2</b> </a> </td> -->
+                  <!-- <td width="50%"> <a href="render_bias6DoF.html?scene=helmet" style="text-decoration: none"> <img src="./images/helmet.jpg" alt="helmet" class="img-responsive" width="25%"/> <b>helmet</b> </a> </td> -->
+                  <!-- <td width="25%"> <a href="render_ship.html?scene=ship" style="text-decoration: none"> <img src="../images/ship.jpg" alt="ship" class="img-responsive" width="100%"/> <b>Ship</b> </a> </td> -->
+                </tr>
+                <tr>
+                  <td style="text-align: center; "> <a href="render_ssaa.html?scene=toaster" style="text-decoration: none"> <img src="./images/toaster.png" alt="toaster" class="img-responsive" width="75%"/> <div>toaster</div> </a> </td>
+                  <td style="text-align: center; "> <a href="render_ssaa.html?scene=ball" style="text-decoration: none"> <img src="./images/ball.png" alt="ball" class="img-responsive" width="75%"/> <div>ball</div> </a> </td>
+                  <td style="text-align: center;"> <a href="render_ssaa.html?scene=teapot" style="text-decoration: none"> <img src="./images/teapot.png" alt="teapot" class="img-responsive" width="75%"/> <div>teapot</div> </a> </td>
+                </tr>
+            </tbody>
+        </table>
+            <!-- <br> <h4> <b>NeRF-synthetic</b> </h4>
+            <table style="table-layout: fixed;"> -->
+                <br> <h4 class="title has-text-centered"> <b>NeRF Synthetic Dataset</b> </h4>
+                <table style="table-layout: fixed;">
+                  <tbody>
+
+                    <td width="25%"> <a href="render_ssaa.html?scene=chair" style="text-decoration: none"> <img src="./images/chair.png" alt="chair" class="img-responsive" width="100%"/> <b>Chair</b> </a> </td>
+                    <td width="25%"> <a href="render_ssaa.html?scene=drums" style="text-decoration: none"> <img src="./images/drums.png" alt="drums" class="img-responsive" width="100%"/> <b>Drums</b> </a> </td>
+                    <td width="25%"> <a href="render_ssaa.html?scene=ficus" style="text-decoration: none"> <img src="./images/ficus.png" alt="ficus" class="img-responsive" width="100%"/> <b>Ficus</b> </a> </td>
+                    <td width="25%"> <a href="render_ssaa.html?scene=hotdog" style="text-decoration: none"> <img src="./images/hotdog.png" alt="hotdog" class="img-responsive" width="100%"/> <b>Hotdog</b> </a> </td>
+                    <!-- <td width="25%"> <a href="render.html?scene=6DoF" style="text-decoration: none"> <img src="../images/6DoF.png" alt="6DoF" class="img-responsive" width="100%"/> <b>6DoF(Click me)</b> </a> </td> -->
+                  </tr>
+                  <tr>
+                    <!-- ?scene=lego -->
+                    <!-- render_ssaa_mobilenerf_forward -->
+                    <td width="25%"> <a href="render_ssaa.html?scene=lego" style="text-decoration: none"> <img src="./images/lego.png" alt="lego" class="img-responsive" width="100%"/> <b>Lego</b> </a> </td>
+                    <td width="25%"> <a href="render_ssaa.html?scene=materials" style="text-decoration: none"> <img src="./images/materials.png" alt="materials" class="img-responsive" width="100%"/> <b>Materials</b> </a> </td>
+                    <td width="25%"> <a href="render_ssaa.html?scene=mic" style="text-decoration: none"> <img src="./images/mic.png" alt="mic" class="img-responsive" width="100%"/> <b>Mic</b> </a> </td>
+                    <td width="25%"> <a href="render_ssaa.html?scene=ship" style="text-decoration: none"> <img src="./images/ship.png" alt="ship" class="img-responsive" width="100%"/> <b>Ship</b> </a> </td>
+                  </tr>
+                </tbody>
+            </table>
+
+            <!-- <br> <h4> <b>NeRF-synthetic</b> </h4>
+            <table style="table-layout: fixed;"> -->
+                <br> <h4 class="title has-text-centered"> <b>Real Capture Dataset</b> </h4>
+                <table style="table-layout: fixed;">
+                  <tbody>
+<!-- 
+                    <td width="31%"> <a href="render_bias.html?scene=gardenspheres" style="text-decoration: none"> <img src="./images/gardensphere.png" alt="gardenspheres" class="img-responsive" width="100%"/> <b>Gardenspheres</b> </a> </td>
+                    <td width="36%"> <a href="render_sedan.html?scene=sedan" style="text-decoration: none"> <img src="./images/sedan.png" alt="sedan" class="img-responsive" width="100%"/> <b>Sedan</b> </a> </td>
+                    <td width="31%"> <a href="render_toycar.html?scene=toycar" style="text-decoration: none"> <img src="./images/toycar.png" alt="toycar" class="img-responsive" width="100%"/> <b>Toycar</b> </a> </td> -->
+                    
+                    
+                    <td width="31%"> <a href="render_garden.html?scene=gardenspheres" style="text-decoration: none"> <img src="./images/gardensphere.png" alt="gardenspheres" class="img-responsive" width="100%"/> <b>Gardenspheres</b> </a> </td>
+                    <!-- <td width="36%"> <a href="" style="text-decoration: none"> <img src="./images/sedan.png" alt="sedan" class="img-responsive" width="100%"/> <b>Sedan(To be release soon)</b> </a> </td> -->
+                    <td width="31%"> <a href="render_toycar.html?scene=toycar" style="text-decoration: none"> <img src="./images/toycar.png" alt="toycar" class="img-responsive" width="100%"/> <b>Toycar</b> </a> </td>
+                    <td width="36%"> <a href="" style="text-decoration: none"> <img src="./images/sedan.png" alt="sedan" class="img-responsive" width="100%"/> <b>Sedan(Comming soon)</b> </a> </td>
+                    
+                    
+                    <!-- <td width="25%"> <a href="render_bias.html?scene=hotdog" style="text-decoration: none"> <img src="./images/hotdog.png" alt="hotdog" class="img-responsive" width="100%"/> <b>Hotdog</b> </a> </td> -->
+                    <!-- <td width="25%"> <a href="render.html?scene=6DoF" style="text-decoration: none"> <img src="../images/6DoF.png" alt="6DoF" class="img-responsive" width="100%"/> <b>6DoF(Click me)</b> </a> </td> -->
+                  </tr>
+                  <!-- <tr>
+                    <td width="25%"> <a href="render_bias.html?scene=lego" style="text-decoration: none"> <img src="./images/lego.png" alt="lego" class="img-responsive" width="100%"/> <b>Lego</b> </a> </td>
+                    <td width="25%"> <a href="render_bias.html?scene=materials" style="text-decoration: none"> <img src="./images/materials.png" alt="materials" class="img-responsive" width="100%"/> <b>Materials</b> </a> </td>
+                    <td width="25%"> <a href="render_bias.html?scene=mic" style="text-decoration: none"> <img src="./images/mic.png" alt="mic" class="img-responsive" width="100%"/> <b>Mic</b> </a> </td>
+                    <td width="25%"> <a href="render_bias.html?scene=ship" style="text-decoration: none"> <img src="./images/ship.png" alt="ship" class="img-responsive" width="100%"/> <b>Ship</b> </a> </td>
+                  </tr> -->
+                </tbody>
+            </table>
+
+
+            <!-- <br> <h4> <b>Open-real360</b> </h4>
+                  <table style="table-layout: fixed;">
+                    <tbody>
+                        <tr>
+                          <td width="25%"> <a href="render_bias_back.html?scene=chair" style="text-decoration: none"> <img src="./images/chair.jpg" alt="chair" class="img-responsive" width="100%"/> <b>Chair</b> </a> </td>
+                          <td width="25%"> <a href="render_bias_back.html?scene=drums" style="text-decoration: none"> <img src="./images/drums.jpg" alt="drums" class="img-responsive" width="100%"/> <b>Drums</b> </a> </td>
+                          <td width="25%"> <a href="render_bias_back.html?scene=ficus" style="text-decoration: none"> <img src="./images/ficus.jpg" alt="ficus" class="img-responsive" width="100%"/> <b>Ficus</b> </a> </td>
+                          <td width="25%"> <a href="render_bias_back.html?scene=hotdog" style="text-decoration: none"> <img src="./images/hotdog.jpg" alt="hotdog" class="img-responsive" width="100%"/> <b>Hotdog</b> </a> </td>
+                          <!-- <td width="25%"> <a href="render.html?scene=6DoF" style="text-decoration: none"> <img src="../images/6DoF.png" alt="6DoF" class="img-responsive" width="100%"/> <b>6DoF(Click me)</b> </a> </td> -->
+                        </tr>
+                        <!-- <tr>
+                          <td width="25%"> <a href="render_bias_back.html?scene=lego" style="text-decoration: none"> <img src="./images/lego.jpg" alt="lego" class="img-responsive" width="100%"/> <b>Lego</b> </a> </td>
+                          <td width="25%"> <a href="render_bias_back.html?scene=materials" style="text-decoration: none"> <img src="./images/materials.jpg" alt="materials" class="img-responsive" width="100%"/> <b>Materials</b> </a> </td>
+                          <td width="25%"> <a href="render_bias_back.html?scene=mic" style="text-decoration: none"> <img src="./images/mic.jpg" alt="mic" class="img-responsive" width="100%"/> <b>Mic</b> </a> </td>
+                          <td width="25%"> <a href="render_bias_back.html?scene=ship" style="text-decoration: none"> <img src="./images/ship.jpg" alt="ship" class="img-responsive" width="100%"/> <b>Ship</b> </a> </td>
+                        </tr> -->
+
+
+
+
+                  <!-- <tr>
+                    <td width="25%"> <a href="render_6DOF.html?scene=6DoF" style="text-decoration: none"> <img src="../images/6DoF.png" alt="6DoF" class="img-responsive" width="100%"/> <b>6DoF(Click me)</b> </a> </td>
+                  </tr> -->
+              </tbody>
+            </table> 
+
+            <!-- <br> <h4><b>Human</b></h4>
+            <table style="table-layout: fixed;">
+              <tbody>
+                <tr>
+                  <td width="25%"> <a href="render_bias6DoF.html?scene=6DoF" style="text-decoration: none"> <img src="./images/6DoF.png" alt="6DoF" class="img-responsive" width="25%"/> <b>6DoF</b> </a> </td>
+                  <td width="25%"> <a href="render_bias6DoF.html?scene=6DoF" style="text-decoration: none"> <img src="./images/6DoF.png" alt="6DoF" class="img-responsive" width="25%"/> <b>6DoF</b> </a> </td>
+                - <td width="25%"> <a href="render_ship.html?scene=ship" style="text-decoration: none"> <img src="../images/ship.jpg" alt="ship" class="img-responsive" width="100%"/> <b>Ship</b> </a> </td> -->
+                <!-- </tr> --> 
+
+              <!-- </tbody> -->
+            <!-- </table> -->
+        </div>
+      </div>
+    </div>
+  </section>
+  <br>
+
+  <section>
+    <!-- <div class="container">
+    <div class="row">
+    <div class="col-12 text-center">
+    <h3>Video</h3>
+    <div class="row justify-content-center" style="align-items:center; display:flex;">
+    <video width="80%" controls autoplay loop style="margin: 5px;"> <source src="./images/video.mp4" type="video/mp4"> </video>
+    </div>
+    </div>
+    </div>
+    </section>
+    <br> -->
+  <!-- citing -->
+  <div class="container">
+    <div class="row ">
+      <div class="col-12">
+        <!-- <h3>Citation</h3> -->
+        <h3 class="title has-text-centered">
+          Citation
+         </h3>
+        <hr style="margin-top:0px">
+        <pre style="background-color: #e9eeef;padding: 1.25em 1.5em">
+<code>REFRAME: Reflective Real-time Rendering with Memory-Efficient Mesh
+</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <footer class="text-center" style="margin-bottom:10px; font-size: medium;">
+    <hr>
+    Thanks to <a href="https://lioryariv.github.io/" target="_blank">Lior Yariv</a> for the <a href="https://lioryariv.github.io/idr/" target="_blank">website template</a>.
+  </footer>
+
+</body>
+</html>

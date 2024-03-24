@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+  <title>Renderer</title>
+  <meta charset="UTF-8" />
+
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+
+  <style>
+    /* 自定义 Stats 字体大小 */
+    .stats-container {
+      font-size: 50px;
+      /* 修改字体大小为 12 像素 */
+    }
+
+    body,
+    div {
+      margin: 0;
+      padding: 0;
+    }
+
+    .renderer {
+      border: dashed #000000;
+    }
+  </style>
+</head>
+
+<body>
+
+
+
+  <div id="container" style="display: flex; justify-content: center; align-items: center"></div>
+
+  <!-- <div id="info" style="position:absolute; top:800px; font-size: 50px;">
+      <div id="fpsdisplay"></div>
+      <div id="sizedisplay"></div>
+  </div> -->
+
+  <!-- <div 
+      style="position: fixed; top: 5px; left: 5px; cursor: pointer; opacity: 0.9; z-index: 10000;">
+      <canvas width="100" height="60" style="width: 128px; height: 80px; display: block;">
+      </canvas><canvas width="100" height="60" style="width: 128px; height:80px; display: none;">
+      </canvas><canvas width="100" height="60" style="width: 128px; height: 80px; display: none;"></canvas>
+    </div> -->
+  <div id="info" style="position:absolute; top:85%; font-size: 40px;left:45%;">
+    <div id="fpsdisplay"></div>
+    <div id="sizedisplay"></div>
+  </div>
+
+
+  <div id="progressBar" style="text-align: center"></div>
+  <canvas id="myCanvas"></canvas>
+
+
+
+</body>
+
+<script type="module">
+  import * as THREE from "https://unpkg.com/three?module";
+  import WebGL from "https://unpkg.com/three/examples/jsm/capabilities/WebGL.js?module";
+  import { OBJLoader } from "https://unpkg.com/three/examples/jsm/loaders/OBJLoader.js?module";
+  import { OrbitControls } from "https://unpkg.com/three/examples/jsm/controls/OrbitControls.js?module";
+  import Stats from "https://unpkg.com/three/examples/jsm/libs/stats.module.js?module";
+  import { GUI } from "https://unpkg.com/three/examples/jsm/libs/lil-gui.module.min.js?module";
+  
+  
+
+
+  
+  // const BASE =
+  //   "https://huggingface.co/ashawkey/nerf2mesh/resolve/main/scenes/"; // remote
+  //   "https://huggingface.co/ashawkey/nerf2mesh"; // remote
+  //  const BASE = "./scenes/"; // local
+  const BASE="https://huggingface.co/xiongdi/maskngp/resolve/main/scenes/";
+  //const BASE="https://huggingface.co/xiongdi/maskngp/resolve/main/scenes/";
+  // const BASE = "https://huggingface.co/xiongdi/maskngp/resolve/main/scenes/";// local
+
+
+  // shaders
+
+  const RenderVertShader =
+
+    `
+    // #version 300 es
+    
+    in vec3 position;  // 输入的顶点位置
+    in vec2 uv;        // 输入的UV坐标
+    in vec3 normal;    // 输入的顶点法线
+    out vec2 vUv;      // 输出的UV坐标,将被传递到片元着色器
+    out vec3 fragNormal;   // 输出的顶点法线，将被传递到片元着色器
+    out mat3 nomalM;
+    out vec3 positionF;
+    out vec3 cameraPos;
+    out mat4 modelPos;
+    uniform mat4 modelViewMatrix; // 模型视图矩阵（将模型空间的顶点位置转换到视图空间）
+    uniform mat4 projectionMatrix;  // 投影矩阵（将视图空间的顶点位置转换到裁剪空间）
+    uniform mat4 modelMatrix;        // 模型矩阵（将模型空间的顶点位置转换到世界空间）
+    uniform vec3 cameraPosition; // 摄像机的位置
+    uniform mat3 normalMatrix;       // 模型视图矩阵的逆转置，用于正确转换法线
+
+
+    void main() {
+        vUv = uv; // 将输入的UV坐标传递到片元着色器
+        gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 ); // 计算裁剪空间的顶点位置
+        fragNormal = normal;
+
+ 
+        precision highp float;
+
+        
+        positionF=position;
+        cameraPos= cameraPosition;
+        modelPos=modelMatrix;
+        nomalM=normalMatrix;
+
+    }
+    `;
+  //需要注意的是，这个着色器假设所有输入的顶点属性（如位置、UV坐标和法线）都已经在模型空间中。这意味着如果模型进行了变换
+  //（如旋转、缩放或平移），这些变换已经应用到了这些属性上。如果模型的变换存储在模型矩阵中，
+  //并且模型的顶点属性是相对于模型的本地坐标系的，那么你可能需要在计算Normal和rayDirection之前应用模型矩阵。
+  const RenderFragShader_template = `
+  
+precision highp float;  // 设置浮点数的精度为高精度
+
+out vec4 pc_FragColor;  // 输出的颜色值
+in vec2 vUv;  // 从顶点着色器接收的UV坐标
+in mat4 modelPos;
+in vec3 positionF;
+in vec3 cameraPos;
+in  mat3 nomalM;
+in vec3 Normal;  // 从顶点着色器接收的法线
+in vec3 normal;
+in vec3 fragNormal;
+// uniform vec3 fragNormal;
+uniform int mode;  // 渲染模式
+uniform float dir_max;
+uniform float dir_min;
+uniform float re_max;
+uniform float re_min;
+uniform float ave_re;
+uniform float norre_max;
+uniform float norre_min;
+uniform float ave_renor;
+uniform highp sampler2D Diffuse;  // diff纹理
+uniform highp sampler2D hash1;//specular 
+uniform highp sampler2D Dirmap;//dirmap 
+uniform highp sampler2D Dirmapre;//dirmapre
+uniform highp sampler2D Normap;//dirmap 
+uniform highp sampler2D Normapre;//dirmap 
+
+// uniform  vec3 vnData; //法线特征
+
+uniform highp sampler2D weightsZero;  // 第一层神经网络的权重,已经存储为sampler2D的纹理采样器格式
+uniform highp sampler2D weightsOne;  // 第二层神经网络的权重
+uniform highp sampler2D BiasZero;  // 第一层神经网络的偏移
+uniform highp sampler2D BiasOne;  // 第二层神经网络的偏移
+#define PI 3.14159265358979323846
+
+
+
+
+vec4 gridSample(sampler2D map, vec2 grid) {
+  //1800,900,4
+    ivec2 inputSize = textureSize(map, 0);
+    int H_in = inputSize.x;
+    int W_in = inputSize.y;
+
+
+    float H_out = (grid.x); // H_out 作为 grid 的 x 分量
+    float W_out = (grid.y); // W_out 作为 grid 的 y 分量
+
+    vec4 outputColor = vec4(0.0);
+
+    vec2 param = vec2(0.0);
+    param.x = (float(W_in - 1) * (float(H_out) + 1.0)) / 2.0;
+    param.y = (float(H_in - 1) * (float(W_out) + 1.0)) / 2.0;
+    //param.x =  (float(H_out) + 1.0) / 2.0;
+    //param.y =  (float(W_out) + 1.0) / 2.0;
+
+    int x0 = int(param.x);
+    int x1 = x0 + 1;
+    int y0 = int(param.y);
+    int y1 = y0 + 1;
+
+    param.x -= float(x0);
+    param.y -= float(y0);
+
+    vec4 left_top = texture(map, vec2(float(y0), float(x0)) / vec2(float(H_in-1), float(W_in-1))) * (1.0 - param.x) * (1.0 - param.y);
+    vec4 left_bottom = texture(map, vec2(float(y1), float(x0)) / vec2(float(H_in-1), float(W_in-1))) * (1.0 - param.x) * param.y;
+    vec4 right_top = texture(map, vec2(float(y0), float(x1)) / vec2(float(H_in-1), float(W_in-1))) * param.x * (1.0 - param.y);
+    vec4 right_bottom = texture(map, vec2(float(y1), float(x1)) / vec2(float(H_in-1), float(W_in-1))) * param.x * param.y;
+
+    //vec4 left_top = texture(map, vec2(float(y0), float(x0)) ) * (1.0 - param.x) * (1.0 - param.y);
+    //vec4 left_bottom = texture(map, vec2(float(y1), float(x0)) ) * (1.0 - param.x) * param.y;
+    //vec4 right_top = texture(map, vec2(float(y0), float(x1)) ) * param.x * (1.0 - param.y);
+    //vec4 right_bottom = texture(map, vec2(float(y1), float(x1))) * param.x * param.y;
+
+    vec4 result = left_bottom + left_top + right_bottom + right_top;
+    // vec4 result = left_bottom/(1.0 - param.x)/param.y;
+    outputColor = result;
+
+    return outputColor;
+}
+
+
+
+vec2 dir2polar(vec3 dir) {
+  float r = sqrt(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
+  float r_xy = sqrt(dir.x * dir.x + dir.y * dir.y);
+    
+    float radian_xy = acos(dir.z / r);
+    float degree_xy = degrees(radian_xy) - 90.0;
+
+    float radian_z = acos(dir.x / (r_xy + 1e-20));
+    float degree_z = degrees(radian_z);
+
+    bool tem = dir.y < 0.0;
+    if (tem) {
+        degree_z = -degree_z;
+    }
+
+    return vec2(degree_xy / 90.0, degree_z / 180.0);
+}
+
+
+
+
+// evaluateNetwork(hash_feature, normalize(rayDirection),normal)
+vec3 evaluateNetwork(vec3 dirmap, float[3] hash, float ndir) {
+
+    // NUM_CHANNELS_ZERO (input_dim) is hard-coded as 6->47
+    // NUM_CHANNELS_ONE (hidden_dim) can vary, but should be divisible by 4  32->64
+    // NUM_CHANNELS_TWO (output_dim) is hard-coded as 3
+    mat4 w;
+    vec4 v;
+    v = vec4(dirmap.x,dirmap.y,dirmap.z,hash[0]);
+    vec4 bias;
+    vec4 result_one[NUM_CHANNELS_ONE / 4];
+    
+    for (int i = 0; i < NUM_CHANNELS_ONE; i += 4) {
+            w = mat4(
+                texelFetch(weightsZero, ivec2(0,i), 0),
+                texelFetch(weightsZero, ivec2(0,i + 1), 0),
+                texelFetch(weightsZero, ivec2(0,i + 2), 0),
+                texelFetch(weightsZero, ivec2(0,i + 3), 0)
+            );   
+            bias=vec4(
+              texelFetch(BiasZero, ivec2(0,i), 0).r,
+              texelFetch(BiasZero, ivec2(0,i+1), 0).r,
+              texelFetch(BiasZero, ivec2(0,i+2), 0).r,
+              texelFetch(BiasZero, ivec2(0,i+3), 0).r
+            );      
+            result_one[i / 4] += v * w+bias;
+    }
+    v = vec4(hash[1],hash[2],ndir,0.0);
+    for (int i = 0; i < NUM_CHANNELS_ONE; i += 4) {
+      w = mat4(
+          texelFetch(weightsZero, ivec2(0, NUM_CHANNELS_ONE + i), 0),
+          texelFetch(weightsZero, ivec2(0, NUM_CHANNELS_ONE + i + 1), 0),
+          texelFetch(weightsZero, ivec2(0, NUM_CHANNELS_ONE + i + 2), 0),
+          texelFetch(weightsZero, ivec2(0, NUM_CHANNELS_ONE + i + 3), 0)
+      );
+      result_one[i / 4] += v * w;
+  }
+  vec3 result;
+
+  for (int i = 0; i < NUM_CHANNELS_ONE / 4; i++) {
+      v = max(result_one[i], 0.0); // relu
+      w = mat4(
+          texelFetch(weightsOne, ivec2(0, i * 3), 0),
+          texelFetch(weightsOne, ivec2(0, i * 3 + 1), 0),
+          texelFetch(weightsOne, ivec2(0, i * 3 + 2), 0),
+          vec4(0.0) // padding
+      );
+      if(i==0){
+        bias=vec4(
+            texelFetch(BiasOne, ivec2(0,0), 0).r,
+            texelFetch(BiasOne, ivec2(0,1), 0).r,
+            texelFetch(BiasOne, ivec2(0,2), 0).r,
+            texelFetch(BiasOne, ivec2(0,3), 0).r
+          );
+      result += (v * w+bias).xyz;
+      }
+      else{
+        result += (v * w).xyz;
+      }
+  }
+    return 1.0 / (1.0 + exp(-result)); 
+    //result = vec3(hash[0],hash[1],hash[2]);
+    //return result;
+}
+
+void main() {    
+
+        vec3 rayDirection = cameraPos-(vec4( positionF, 1.0 )).rgb; 
+        vec4 normal_map = texture(Normap,vUv);//h[:3];
+        vec4 normal_mapre = texture(Normapre,vUv);//h[:3];
+
+  
+        float min_renor = norre_min;
+        float max_renor = norre_max;
+        normal_mapre = normal_mapre * (max_renor - min_renor) +min_renor;
+        normal_mapre = normal_mapre/pow(10.0, ave_renor);
+        normal_map = normal_mapre + normal_map;
+
+        vec3 normal_map_ = (normal_map*(2.0) - 1.0).xyz;
+
+
+        float[3] hash_feature;
+        vec3 Dir= normalize(rayDirection);
+        float Ndir = (Dir.x * normal_map_.x + Dir.y * normal_map_.y + Dir.z * normal_map_.z);
+        vec3 Wdir = 2.0* (Ndir * normal_map_) - Dir;
+        vec2 degree_xyz = dir2polar(Wdir.xyz);
+        float degree_xy = degree_xyz.x;  
+        float degree_z = degree_xyz.y;
+        // float degree_xy = (degree_xyz.y+1.0)/2.0;
+        // float degree_z = (degree_xyz.x+1.0)/2.0;
+        // highp float degree_xy = (degree_xyz.y+1.0)/2.0;
+        // highp float degree_z = (degree_xyz.x+1.0)/2.0;
+
+        vec4 diffuse=texture(Diffuse,vUv);//h[:3];
+
+        vec4 txyz=  texture(hash1,vUv); //h[3:];
+
+        
+        highp vec2 polar_uv = vec2(-degree_xy, degree_z);
+        vec4 dirmap = gridSample(Dirmap, polar_uv);
+        vec4 dirmapre = gridSample(Dirmapre, polar_uv);
+        //highp vec4 dirmap = texture(Dirmap,polar_uv);
+
+        // float min_dir =-2.669342613220214844e+01;
+        // float max_dir =2.900531196594238281e+01;
+        float min_dir = dir_min;
+        float max_dir = dir_max;
+        dirmap = dirmap * (max_dir - min_dir) +min_dir;
+
+        float min_re = re_min;
+        float max_re = re_max;
+        dirmapre = dirmapre * (max_re - min_re) +min_re;
+        dirmapre = dirmapre/pow(10.0, ave_re);
+        dirmap = dirmap + dirmapre;
+     
+
+        diffuse=(diffuse);//4096
+        vec3 dirmap_xyz = (dirmap.xyz);
+        //vec3 dirmap_xyz = vec3(1.0,1.0,1.0)
+
+        
+        hash_feature[0]     = txyz.r;
+        hash_feature[1]     = txyz.g;
+        hash_feature[2]     = txyz.b;
+        vec3 degree = vec3(degree_xy,degree_z,0.0);
+        
+        
+        
+
+    if (mode == 1) { // diffuse
+        pc_FragColor.rgb = diffuse.rgb;
+    } else {
+        if (mode == 2) { // specular
+            // pc_FragColor.rgb = evaluateNetwork(hash_feature, (Dir));
+            pc_FragColor.rgb = evaluateNetwork(dirmap_xyz, hash_feature, (Ndir));
+
+        } else { // full
+            pc_FragColor.rgb = clamp((diffuse.rgb +evaluateNetwork(dirmap_xyz, hash_feature, (Ndir))), 0.0f, 1.0f);
+            //pc_FragColor.rgb = dirmap.xyz;
+            // pc_FragColor.rgb = degree;
+            
+            // pc_FragColor.rgb = (normal_map_+1.0)/2.0;
+            // pc_FragColor.rgb = diffuse.rgb;
+            //pc_FragColor.rgb =(Wdir+1.0)/2.0;
+            // pc_FragColor.rgb = Ndir;
+            // pc_FragColor.rgb = txyz.rgb;
+            // pc_FragColor.rgb = rayDirection;
+            // pc_FragColor.rgb = clamp((diffuse.rgb), 0.0f, 1.0f);
+            // pc_FragColor.rgb = vec3(0.0, 0.0, 0.0);
+        }
+      }
+
+    pc_FragColor.a = 1.0;  // 设置颜色的透明度为1(不透明）
+    }
+`;
+
+  function createNetworkWeightTexture(network_weights) {
+    let width = network_weights.length; //24
+    let height = network_weights[0].length; //32
+
+    console.log("宽度是", width);
+    console.log("高度是", height);
+
+    let weightsData = new Float32Array(width * height);
+    for (let co = 0; co < height; co++) {
+      for (let ci = 0; ci < width; ci++) {
+        let index = co * width + ci; // column-major
+        let weight = network_weights[ci][co];
+        weightsData[index] = weight;
+      }
+    }
+
+    let width_pad = width + (4 - (width % 4)); // make divisible by 4
+    let weightsData_pad = new Float32Array(width_pad * height);
+    for (let j = 0; j < width_pad; j += 4) {
+      for (let i = 0; i < height; i++) {
+        for (let c = 0; c < 4; c++) {
+          if (c + j >= width) {
+            weightsData_pad[j * height + i * 4 + c] = 0.0; // zero padding
+          } else {
+            weightsData_pad[j * height + i * 4 + c] =
+              weightsData[j + i * width + c];
+          }
+        }
+      }
+    }
+
+    let texture = new THREE.DataTexture(
+      weightsData_pad,
+      1,
+      (width_pad * height) / 4,
+      THREE.RGBAFormat,
+      THREE.FloatType
+    );
+    texture.magFilter = THREE.NearestFilter;
+    texture.minFilter = THREE.NearestFilter;
+    texture.needsUpdate = true;
+    // console.log("函数中的texture is: ",texture);
+    return texture;
+  }
+
+  function createNetworkBias(network_bias) {
+    let width = network_bias.length; //64,3
+    // let height = network_weights[0].length; //32->64,3->3
+
+    console.log("bias的长度是", width);
+    // console.log('高度是',height)
+
+    let weightsData = new Float32Array(width);
+
+    for (let ci = 0; ci < width; ci++) {
+      // let index = ci; // column-major
+      // let weight = network_bias[ci];
+      // weightsData[index] = weight;
+      weightsData[ci] = network_bias[ci];
+    }
+    let width_pad;
+    if (width % 4 != 0) {
+      width_pad = width + (4 - (width % 4));
+    } // make divisible by 4
+    else {
+      width_pad = width;
+    }
+    console.log("当前bisa填充后的长度", width_pad);
+    let weightsData_pad = new Float32Array(width_pad);
+
+    for (let i = 0; i < width_pad; i += 1) {
+      if (i < width) {
+        weightsData_pad[i] = weightsData[i];
+      } else {
+        weightsData_pad[i] = 0.0;
+      }
+    }
+    console.log("当前的偏移未填充时如下", weightsData);
+    console.log("当前的偏移填充如下", weightsData_pad);
+    let texture = new THREE.DataTexture(
+      weightsData_pad,
+      1,
+      width_pad,
+      // THREE.RGBAFormat,
+      THREE.RedFormat,
+      THREE.FloatType
+    );
+    texture.magFilter = THREE.NearestFilter;
+    texture.minFilter = THREE.NearestFilter;
+    texture.needsUpdate = true;
+    // console.log("函数中的texture is: ",texture);
+    return texture;
+  }
+
+  function createViewDependenceFunctions(network_weights) {
+    let channelsZero = network_weights['net.0.weight'].length;
+    let channelsOne = network_weights['net.2.weight'].length;
+    let channelsTwo = network_weights['net.2.weight'][0].length;
+    // console.log('')
+    console.log("[INFO] load MLP: ", channelsZero, channelsOne, channelsTwo);
+
+    let RenderFragShader = RenderFragShader_template.replace(
+      new RegExp("NUM_CHANNELS_ZERO", "g"),
+      channelsZero
+    );
+    RenderFragShader = RenderFragShader.replace(
+      new RegExp("NUM_CHANNELS_ONE", "g"),
+      channelsOne
+    );
+    RenderFragShader = RenderFragShader.replace(
+      new RegExp("NUM_CHANNELS_TWO", "g"),
+      channelsTwo
+    );
+
+    return RenderFragShader;
+  }
+
+  let container,
+    params,
+    progressBar,
+    progress,
+    scene,
+    camera,
+    renderer,
+    controls,
+    stats,
+    configs,
+    sceneRef,
+    postScene,
+    postCamera
+    ;
+
+
+  // let composer, fxaaPass;
+  
+  
+  let gLastFrame = window.performance.now();
+  let oldMilliseconds = 1000;
+  let gLoadedOBJs = 0;
+  let gLoadedPNGs = 0;
+  let gTotalOBJs = 0;
+  let gTotalPNGs = 0;
+  const object_rescale = 0.1;
+  // support changing scene name from url param
+  // e.g. ?scene=lego&scene=chair
+  //获取当前URL的值
+  params = new URLSearchParams(new URL(window.location.href).searchParams);
+  // let url = window.location.href;
+  //记录当前页面的url
+  // console.log(url);
+  // document.getElementById("demo").innerHTML = url;
+
+  const scene_names = params.getAll("scene");
+  //传入场景的名称
+  // const scene_names = "scene=lego&scene=chair&scene=bicycle";
+  console.log(scene_names);
+
+  // global config
+  configs = {
+    bg_color: (params.get("bg_color") === null) ? 0xffffff : parseInt(params.get("bg_color")), // default is white
+    H: parseInt(params.get("H")) || Math.floor(0.95 * window.innerHeight),
+    W: parseInt(params.get("W")) || Math.floor(0.99 * window.innerWidth),
+    fovy: parseInt(params.get("fovy")) || 60,
+    near: parseFloat(params.get("near")) || 0.01,
+    far: parseFloat(params.get("far")) || 100,
+    cameraState: params.get("cameraState"),
+  };
+  //记录config的值
+  console.log(configs);
+
+
+
+  function updateFPSCounter() {
+    let currentFrame = window.performance.now();
+    let milliseconds = currentFrame - gLastFrame;
+    let smoothMilliseconds = oldMilliseconds * (0.95) + milliseconds * 0.05;
+    let smoothFps = 1000 / smoothMilliseconds;
+    gLastFrame = currentFrame;
+    oldMilliseconds = smoothMilliseconds;
+    // if (gTotalOBJs==0 || gLoadedOBJs!=gTotalOBJs || gLoadedPNGs!=gTotalPNGs) {
+    // 	document.getElementById('fpsdisplay').innerHTML = "Loaded OBJs: "+gLoadedOBJs.toFixed(0) + "/" + gTotalOBJs.toFixed(0) + "  Loaded PNGs: "+gLoadedPNGs.toFixed(0) + "/" + gTotalPNGs.toFixed(0);
+    // }
+    // else {
+    document.getElementById('fpsdisplay').innerHTML = "FPS: " + smoothFps.toFixed(1);
+    // }
+    // console.log("the time is  ",smoothFps );
+  }
+
+
+
+
+  // function animate() {
+  //   requestAnimationFrame(animate);
+  //   // controls.update();
+  //   // render();
+  //   composer.render();
+  //   // stats.update();
+  // }
+
+  //新的控制
+  function initProgressBar(name, length) {
+    progressBar = document.getElementById("progressBar");
+    progress[name] = new Array(length).fill("🔴");
+    progressBar.innerText = Object.keys(progress)
+      .map((key) => progress[key].join(""))
+      .join("|");
+  }
+  function updateProgressBar(name, index) {
+    progressBar = document.getElementById("progressBar");
+    progress[name][index] = "🟢";
+    progressBar.innerText = Object.keys(progress)
+      .map((key) => progress[key].join(""))
+      .join("|");
+  }
+  const preset_size_w = 800;
+  const preset_size_h = 800;
+  
+  let renderTarget;
+  function init() {
+    console.log("[INFO] initialize...");
+
+    // init webgl
+    if (WebGL.isWebGL2Available() === false) {
+      document.body.appendChild(WebGL.getWebGL2ErrorMessage());
+      return;
+    }
+
+    // return error message if conf is empty
+    if (Object.keys(scene_names).length === 0) {
+      let e = document.createElement("p");
+      e.style.cssText = "text-align: center; font-size: 28px;";
+      e.innerHTML =
+        "<b>Please provide at least one scene as URL parameters:</b> \
+        ";
+      document.body.appendChild(e);
+      return;
+    }
+
+    // create renderer
+    container = document.getElementById("container");
+
+    renderer = new THREE.WebGLRenderer({
+      powerPreference: "high-performance",
+      // precision: "mediump",
+      // antialias: true,
+      precision: 'highp',
+
+    });
+
+    renderer.setPixelRatio(2);
+    // renderer.setSize(preset_size_w, preset_size_h);
+    // renderer.setClearColor( new THREE.Color("rgb(0, 0, 0)"), 0.5 );
+    // renderer.setClearColor(new THREE.Color("rgb(255, 255, 255)"), 1.0)
+        
+    renderer.domElement.classList.add("renderer");
+    container.appendChild(renderer.domElement);
+
+
+
+  //   window.addEventListener('resize', () => {
+  //   // 更新相机
+  //   camera.aspect = window.innerWidth / window.innerHeight;
+  //   camera.updateProjectionMatrix();
+
+  //   // 更新渲染器和composer大小
+  //   // renderer.setSize(window.innerWidth, window.innerHeight);
+  //   // composer.setSize(window.innerWidth, window.innerHeight);
+
+  //   // 更新任何需要根据屏幕大小变化调整的后处理通道参数
+  //   // 例如，更新FXAA通道的分辨率参数
+  //   const pixelRatio = renderer.getPixelRatio();
+  //   fxaaPass.material.uniforms['resolution'].value.x = 1 / (window.innerWidth * pixelRatio);
+  //   fxaaPass.material.uniforms['resolution'].value.y = 1 / (window.innerHeight * pixelRatio);
+  //   composer.addPass(fxaaPass);
+  // });
+
+
+
+
+    // composer = new EffectComposer(renderer);
+    // const renderPass = new RenderPass(scene, camera);
+    // composer.addPass(renderPass);
+
+
+    // // 创建并添加FXAAPass
+    // fxaaPass = new ShaderPass(FXAAShader);
+    // const pixelRatio = renderer.getPixelRatio();
+    // fxaaPass.material.uniforms['resolution'].value.x = 1 / (window.innerWidth * pixelRatio);
+    // fxaaPass.material.uniforms['resolution'].value.y = 1 / (window.innerHeight * pixelRatio);
+    // composer.addPass(fxaaPass);
+
+
+
+    // Create a multi render target with Float buffers
+    // renderTarget = new THREE.WebGLMultipleRenderTargets(
+    //   configs.W * 50,
+    //   configs.H * 50,
+    //   3
+    // );
+
+
+    // const upscaleFactor = 2; // 上采样因子，根据需要调整
+    // renderTarget = new THREE.WebGLRenderTarget(configs.W * upscaleFactor, configs.H * upscaleFactor);
+
+
+
+    // renderTarget = new THREE.WebGLRenderTarget(preset_size_w * 2,
+    //   preset_size_h * 2,
+    //   3);
+    // renderTarget.texture.minFilter = THREE.LinearFilter; // 使用线性滤波
+    // renderTarget.texture.magFilter = THREE.LinearFilter; // 使用线性滤波
+
+    // for ( let i = 0, il = renderTarget.texture.length; i < il; i ++ ) {
+    //   renderTarget.texture[ i ].minFilter = THREE.LinearFilter;
+    //   renderTarget.texture[ i ].magFilter = THREE.LinearFilter;
+    //   renderTarget.texture[ i ].type = THREE.FloatType;
+    // }
+
+    // stats = new Stats();
+    // stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+    // stats.domElement.style.fontSize = 200
+    // container.appendChild(stats.dom);
+
+    // 性能插件，监听fps
+    // stats = new Stats();
+    // const statsContainer = document.createElement('div');
+    // statsContainer.classList.add('stats-container');
+    // statsContainer.appendChild(stats.dom);
+    // document.body.appendChild(statsContainer);
+
+    // create camera
+    camera = new THREE.PerspectiveCamera(configs.fovy, configs.W / configs.H, configs.near, configs.far);
+
+    //Mobil
+    // camera = new THREE.PerspectiveCamera(configs.fovy,configs.W / configs.H, 2 * object_rescale, 6 * object_rescale);
+    // camera = new THREE.PerspectiveCamera(39, preset_size_w / preset_size_h, 2 * object_rescale, 6 * object_rescale);
+    
+    // camera.position.x = 3.0;
+    // camera.position.y = 2.0;
+    // camera.position.z = 2.0;
+
+
+    // camera.position.x = 3.0;
+    camera.position.y = 2.0;
+    camera.position.z = 3.464;
+    camera.up.set(0, 0, 1);
+
+    // Mobilenerf的Setting
+    // camera = new THREE.PerspectiveCamera(39, preset_size_w / preset_size_h, 2 * object_rescale, 6 * object_rescale);
+    //     camera.position.y = 2.0 * object_rescale;
+    //     camera.position.z = 3.464 * object_rescale;
+    controls = new OrbitControls(camera, renderer.domElement);
+
+    // controls.enableDamping = true;
+    // controls.screenSpacePanning = true;
+
+    //   controls.enableDamping = true;
+    // controls.screenSpacePanning = true;
+    // controls.enableDamping = true;
+    // controls.screenSpacePanning = true;
+    //controls.minPolarAngle = Math.PI / 2.6; // 设置最小垂直旋转角度（以弧度为单位）
+    controls.maxPolarAngle = Math.PI / 2.3; // 设置最大垂直旋转角度（以弧度为单位）
+    //controls.minAzimuthAngle =  Math.PI / 8; // 设置最小水平旋转角度（以弧度为单位）
+    //controls.maxAzimuthAngle = Math.PI / 2; // 设置最大水平旋转角度（以弧度为单位）
+
+    // create scene
+    scene = new THREE.Scene();
+    sceneRef = {};
+
+    // console.log(configs.bg_color);
+    scene.background = new THREE.Color(configs.bg_color); // white background
+
+    // window.addEventListener( 'resize', onWindowResize, false );
+
+    // create GUI
+    const gui = new GUI();
+
+    gui.addColor(configs, "bg_color").onChange((v) => {
+      scene.background = new THREE.Color(v);
+    });
+
+    gui.add(configs, "H", 64, Math.max(preset_size_h, 1024)).onChange((v) => {
+      camera.aspect = preset_size_w / v;
+      camera.updateProjectionMatrix();
+      renderer.setSize(preset_size_w, v);
+      render();
+    });
+    gui.add(configs, "W", 64, Math.max(preset_size_w, 1024)).onChange((v) => {
+      camera.aspect = v / preset_size_h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(v, preset_size_h);
+      render();
+    });
+    gui.add(configs, "fovy", 0.001, 180).onChange((v) => {
+      camera.fov = v;
+      camera.updateProjectionMatrix();
+      render();
+    });
+    gui.add(configs, "near", 0.001, 10).onChange((v) => {
+      camera.near = v;
+      camera.updateProjectionMatrix();
+      render();
+    });
+    gui.add(configs, "far", 0.001, 1000).onChange((v) => {
+      camera.far = v;
+      camera.updateProjectionMatrix();
+      render();
+    });
+
+    // load camera pose
+    if (configs["cameraState"] !== null) {
+      camera.matrix.fromArray(JSON.parse(configs["cameraState"]));
+      camera.matrix.decompose(
+        camera.position,
+        camera.quaternion,
+        camera.scale
+      );
+      camera.updateProjectionMatrix();
+      controls.update();
+    }
+
+    // separate config per scene,不同场景不同的设置
+    scene_names.forEach((name, index) => {
+      configs[name] = {
+        renderMode: 0, // rendering mode: 0 = full, 1 = diffuse, 2 = specular.
+        pos_x: parseFloat(params.get(name + ".pos_x")) || 0,
+        pos_y: parseFloat(params.get(name + ".pos_y")) || 0,
+        pos_z: parseFloat(params.get(name + ".pos_z")) || 0,
+        scale_x: parseFloat(params.get(name + ".scale_x")) || 1,
+        scale_y: parseFloat(params.get(name + ".scale_y")) || 1,
+        scale_z: parseFloat(params.get(name + ".scale_z")) || 1,
+        rot_x: parseFloat(params.get(name + ".rot_x")) || 0,
+        rot_y: parseFloat(params.get(name + ".rot_y")) || 0,
+        rot_z: parseFloat(params.get(name + ".rot_z")) || 0,
+      };
+      const folder = gui.addFolder(name);
+      folder
+        .add(configs[name], "renderMode", {
+          full: 0,
+          diffuse: 1,
+          specular: 2,
+        })
+        .onChange((v) => {
+          sceneRef[name].forEach((object, index) => {
+            object.traverse(function (child) {
+              if (child.type == "Mesh") {
+                child.material.uniforms["mode"]["value"] = v;
+              }
+            });
+          });
+        });
+      folder.add(configs[name], "pos_x", -10, 10).onChange((v) => {
+        sceneRef[name].forEach((object, index) => {
+          object.position.x = v;
+        });
+      });
+      folder.add(configs[name], "pos_y", -10, 10).onChange((v) => {
+        sceneRef[name].forEach((object, index) => {
+          object.position.y = v;
+        });
+      });
+      folder.add(configs[name], "pos_z", -10, 10).onChange((v) => {
+        sceneRef[name].forEach((object, index) => {
+          object.position.z = v;
+        });
+      });
+      folder.add(configs[name], "scale_x", 0, 5).onChange((v) => {
+        sceneRef[name].forEach((object, index) => {
+          object.scale.x = v;
+        });
+      });
+      folder.add(configs[name], "scale_y", 0, 5).onChange((v) => {
+        sceneRef[name].forEach((object, index) => {
+          object.scale.y = v;
+        });
+      });
+      folder.add(configs[name], "scale_z", 0, 5).onChange((v) => {
+        sceneRef[name].forEach((object, index) => {
+          object.scale.z = v;
+        });
+      });
+      folder.add(configs[name], "rot_x", 0, 180).onChange((v) => {
+        sceneRef[name].forEach((object, index) => {
+          object.rotation.x = (v / 180) * Math.PI;
+        });
+      });
+      folder.add(configs[name], "rot_y", 0, 180).onChange((v) => {
+        sceneRef[name].forEach((object, index) => {
+          object.rotation.y = (v / 180) * Math.PI;
+        });
+      });
+      folder.add(configs[name], "rot_z", 0, 360).onChange((v) => {
+        sceneRef[name].forEach((object, index) => {
+          object.rotation.z = (v / 180) * Math.PI;
+        });
+      });
+      folder.close(); // collapsed by default
+    });
+
+    configs["save config URL"] = () => {
+      // construct a URL string that repeat current configs
+      let base = window.location.href.split("?")[0];
+      function unwrap(x, prefix = "") {
+        let res = [];
+        for (const key of Object.keys(x)) {
+          // leave out default values
+          if (
+            (key.includes("pos") && x[key] === 0) ||
+            (key.includes("scale") && x[key] === 1) ||
+            (key.includes("rot") && x[key] === 0) ||
+            (key === "renderMode" && x[key] === 0)
+          )
+            continue;
+          res.push(prefix + key + "=" + String(x[key]));
+        }
+        return res.join("&");
+      }
+      let res = [];
+      for (const key of Object.keys(configs)) {
+        if (
+          key == "save config URL" ||
+          (key === "fovy" && configs[key] === 60) ||
+          (key === "near" && configs[key] === 0.01) ||
+          (key === "far" && configs[key] === 100) ||
+          (key === "bg_color" && configs[key] === 0xffffff)
+        ) {
+          continue;
+        } else if (key == "cameraState") {
+          res.push("cameraState=" + JSON.stringify(camera.matrix.toArray()));
+        } else if (configs[key].constructor == Object) {
+          res.push("scene=" + key);
+          res.push(unwrap(configs[key], key + "."));
+        } else {
+          res.push(key + "=" + String(configs[key]));
+        }
+      }
+      prompt("Copy to clipboard: Ctrl+C, Enter", base + "?" + res.join("&"));
+    };
+
+    gui.add(configs, "save config URL");
+
+    // load all scenes async
+    let promises = [];
+    progress = {};
+
+    // scene_names.forEach((name,index)=>console.log((name,index)));
+    console.log("the name of the scene is: ", scene_names);
+
+    // scene_names.forEach(name=>console.log(name));
+    // scene_names = Array.from(scene_names);
+    // scene_names.forEach((name,index)=>console.log((name)));
+    // console.log("[INFO] test:");
+    let Values;
+    let dirmapmin;
+    let dirmapmax;
+    let averagere;
+    let remin;
+    let remax;
+    let averagerenor;
+    let norremin;
+    let norremax;
+
+    scene_names.forEach((name, index) => {
+      fetch(BASE + name + "/minmax.txt")
+        .then(response => response.text())
+        .then(data => {
+          // Handling the loaded data
+          Values = data;
+          console.log('Loaded minmax.txt:', Values);
+          // Here you can call a function to process minMaxValues,
+          // for example, updating shader uniform variables
+          // updateShader(minMaxValues);
+
+          const ValuesArray = Values.split('\n');
+
+          // Now minMaxValuesArray is an array containing the two numerical values as separate elements
+          dirmapmin = parseFloat(ValuesArray[0]);
+          dirmapmax = parseFloat(ValuesArray[1]);
+          averagere = parseFloat(ValuesArray[2]);
+          remin = parseFloat(ValuesArray[3]);
+          remax = parseFloat(ValuesArray[4]);
+          averagerenor = parseFloat(ValuesArray[5]);
+          norremin = parseFloat(ValuesArray[6]);
+          norremax = parseFloat(ValuesArray[7]);
+
+          console.log('dirmapmin:', dirmapmin);
+          console.log('dirmapmax:', dirmapmax);
+          console.log('average residual:', averagere);
+          console.log('remin:', remin);
+          console.log('remax:', remax);
+          console.log('average residual normal:', averagerenor);
+          console.log('norremin:', norremin);
+          console.log('norremax:', norremax);
+        })
+        .catch(error => console.error('Error loading minmax.txt:', error));
+
+
+
+      promises.push(fetch(BASE + name + "/mlp.json").then((response) => { return response.json(); })
+        .catch((error) => {
+          console.error("Error:", error);
+        })
+        .then((network_weights) => {
+          console.log("[INFO] loading:", name);
+
+
+          // check bound, load all meshes
+          // let bound = network_weights["bound"];
+          // let cascade = network_weights["cascade"];
+          let cascade = 2; //存储到8张图片（每张图片4维）
+
+          initProgressBar(name, cascade);
+          sceneRef[name] = [];
+
+          // for (let cas = 0; cas < cascade; cas++) {//多张图片的存储
+          // load feature texture,漫反射材质与镜面反射材质
+
+          let diffuse = new THREE.TextureLoader().load(
+            BASE + name + "/diffusefe_" + ".jpg",
+            //BASE + name + "/diffusefe" + ".jpg",
+            (object) => {
+              console.log("[INFO] loaded diffuse texture", BASE + name + "/diffusefe" + ".jpg");
+              updateProgressBar(name, 0);
+            }
+          );
+
+          let tex1 = new THREE.TextureLoader().load(
+            //BASE + name + "/specularfe" + ".jpg",
+            BASE + name + "/specularfe_" + ".jpg",
+            (object) => {
+              console.log("[INFO] loaded specular texture", BASE + name + "/specularfe" + ".jpg");
+              updateProgressBar(name, 1);
+            }
+          );
+
+          let dirmap = new THREE.TextureLoader().load(
+            BASE + name + "/dirmap" + ".png",
+            // BASE + name + "/roll_0" + ".png",
+            (object) => {
+              console.log("[INFO] loaded dirmap texture", BASE + name + "/dirmap" + ".png");
+              updateProgressBar(name, 2);
+            }
+          );
+
+          let dirmapre = new THREE.TextureLoader().load(
+            BASE + name + "/reimg" + ".png",
+            (object) => {
+              console.log("[INFO] loaded dirmap residual texture", BASE + name + "/reimg" + ".png");
+              updateProgressBar(name, 2);
+            }
+          );
+
+
+          let normalmap = new THREE.TextureLoader().load(
+            //BASE + name + "/specularfe" + ".jpg",
+            BASE + name + "/normal_" + ".png",
+            (object) => {
+              console.log("[INFO] loaded normal texture", BASE + name + "/normal" + ".png");
+              updateProgressBar(name, 2);
+            }
+          );
+
+          let normalmapre = new THREE.TextureLoader().load(
+            //BASE + name + "/specularfe" + ".jpg",
+            BASE + name + "/normalre" + ".png",
+            (object) => {
+              console.log("[INFO] loaded normal texture", BASE + name + "/normalre" + ".png");
+              updateProgressBar(name, 2);
+            }
+          );
+
+          // console.log("the tex4 is: ", tex4);
+
+          diffuse.magFilter = THREE.NearestFilter;
+          diffuse.minFilter = THREE.NearestFilter;
+          tex1.magFilter = THREE.NearestFilter;
+          tex1.minFilter = THREE.NearestFilter;
+          dirmap.magFilter = THREE.NearestFilter;
+          dirmap.minFilter = THREE.NearestFilter;
+          dirmapre.magFilter = THREE.NearestFilter;
+          dirmapre.minFilter = THREE.NearestFilter;
+          normalmap.magFilter = THREE.NearestFilter;
+          normalmap.minFilter = THREE.NearestFilter;
+          normalmapre.magFilter = THREE.NearestFilter;
+          normalmapre.minFilter = THREE.NearestFilter;
+
+
+          // load MLP
+          let RenderFragShader = //将参数传入片段着色器
+            createViewDependenceFunctions(network_weights);
+          // console.log("片段着色器是: ", RenderFragShader);
+
+
+          let weightsTexZero = createNetworkWeightTexture(
+            network_weights["net.0.weight"]
+          );
+          console.log("weightsTexZero is: ", weightsTexZero);
+          let weightsTexOne = createNetworkWeightTexture(
+            network_weights["net.2.weight"]
+          );
+          console.log("weightsTexOne is: ", weightsTexOne);
+
+          let weightsBiasZero = createNetworkBias(
+            network_weights["net.0.bias"]
+          );
+          console.log("weightsBiasZero is: ", weightsBiasZero);
+
+          let weightsBiasOne = createNetworkBias(
+            network_weights["net.2.bias"]
+          );
+          console.log("weightsBiasOne is: ", weightsBiasOne);
+
+
+          const canvas = document.getElementById("myCanvas"); // 替换 "myCanvas" 为您的 canvas 元素的 ID
+          const gl = canvas.getContext("webgl2"); // 获取 WebGL 上下文
+          if (!gl) {
+            console.error("WebGL is not supported in your browser");
+          }
+
+          var tmp;
+          // load obj
+          // Float32Array vn;
+
+
+
+
+
+
+          let obj_mesh = new OBJLoader().load(BASE + name + "/mesh_0_" + ".obj", object => {
+            // let obj_mesh = new OBJLoader().load(BASE + name + "/mesh_0_new" + ".obj",object => {  
+            object.traverse(function (child) {
+              if (child.type == "Mesh") {
+                const geometry = child.geometry;
+                const vn_data = geometry.attributes.normal.array; // vn数据
+                // const vn_data = geometry.attributes.normal.
+                tmp = vn_data;
+                // 编译顶点着色器和片段着色器
+
+                let newmat = new THREE.RawShaderMaterial({
+
+                  side: THREE.DoubleSide,
+                  vertexShader: RenderVertShader,
+                  // vertexShader: document.querySelector( '#gbuffer-vert' ).textContent.trim(),
+                  fragmentShader: RenderFragShader,
+                  // in:{
+                  //   vnData: { value: vn }, // 传递vn数据到着色器
+                  // },
+                  uniforms: {
+                    mode: { value: configs[name].renderMode },
+                    vnData: { value: vn_data }, // 传递vn数据到着色器
+                    // fragNormal: { value: vn_data }, // 传递vn数据到着色器
+                    // tDiffuse: { value: tex0 },
+                    // tSpecular: { value: tex1 },
+                    // hash:{value:tex},//加载的hash特征
+
+                    Diffuse: { value: diffuse },
+                    // hash0:{value:tex0},
+                    hash1: { value: tex1 },
+                    dir_min: { value: dirmapmin },
+                    dir_max: { value: dirmapmax },
+                    ave_re: { value: averagere },
+                    re_min: { value: remin },
+                    re_max: { value: remax },
+                    ave_renor: { value: averagerenor },
+                    norre_min: { value: norremin },
+                    norre_max: { value: norremax },
+                    Dirmap: { value: dirmap },
+                    Dirmapre: { value: dirmapre },
+                    Normap: { value: normalmap },
+                    Normapre: { value: normalmapre },
+                    weightsZero: { value: weightsTexZero },
+                    weightsOne: { value: weightsTexOne },
+                    BiasZero: { value: weightsBiasZero },
+                    BiasOne: { value: weightsBiasOne },
+                  },
+                  glslVersion: THREE.GLSL3,
+
+                });
+
+                child.material = newmat;
+              }
+            });
+            console.log("[INFO] loaded mesh:", name);
+            console.log("[INFO] 计算的法线信息为:", tmp);
+            updateProgressBar(name, 8 * 3);
+
+
+            object.position.set(
+              configs[name].pos_x,
+              configs[name].pos_y,
+              configs[name].pos_z
+            );
+            object.scale.set(
+              configs[name].scale_x,
+              configs[name].scale_y,
+              configs[name].scale_z
+            );
+            object.rotation.set(
+              (configs[name].rot_x / 180) * Math.PI,
+              (configs[name].rot_y / 180) * Math.PI,
+              (configs[name].rot_z / 180) * Math.PI
+            );
+            sceneRef[name].push(object);
+            scene.add(object);
+          }
+          );
+          console.log("加载的obj文件是: ", obj_mesh);
+
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        })
+
+
+
+      );
+
+
+    });
+
+    // Promise.all(promises).then((response) => {
+      console.log("[INFO] start animation!");
+      window.addEventListener('resize', onWindowResize, true);
+      onWindowResize();
+      animate();
+    // });
+
+
+  }
+
+  function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    render();
+    // stats.update();
+  }
+
+
+  function onWindowResize() {
+    camera.aspect = preset_size_w / preset_size_h;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(preset_size_w, preset_size_h);
+    // renderer.setClearColor(new THREE.Color("rgb(255, 255, 255)"), 1.0)
+    console.log("[INFO] ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!");
+    // renderTarget.setSize(configs.W * 2, configs.H * 2);
+    // document.getElementById("sizedisplay").innerHTML =
+    //   "Size: " + preset_size_w.toFixed(0) + "x" + preset_size_h.toFixed(0);
+    document.getElementById('sizedisplay').innerHTML = "Size: " + (preset_size_w).toFixed(0) + "x" + (preset_size_h).toFixed(0);
+    
+    render();
+  }
+  function render() {
+    renderer.setRenderTarget(null);
+    renderer.render(scene, camera);
+    updateFPSCounter();
+  }
+  init();
+</script>
+
+</html>
