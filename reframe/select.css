@@ -1,0 +1,56 @@
+.video-flex-container {
+    display: flex; /* 使用 Flexbox 布局 */
+    flex-wrap: wrap; /* 允许内容换行 */
+    justify-content: space-around; /* 在每个项目之间和周围提供均匀的空间 */
+  }
+  
+  .video-container {
+    flex: 1; /* 让每个容器都有弹性地占据可用空间 */
+    max-width: 18%; /* 限制最大宽度，确保一行可以放下五个视频 */
+    margin-bottom: 20px; /* 添加一些底部间距 */
+  }
+  
+  .video, .videoMerge {
+    width: 100%; /* 让视频和画布充满其容器 */
+    display: block; /* 避免默认的内联显示造成的间隙 */
+  }
+
+  .hidden-rows {
+    display: none;
+    cursor: pointer;
+    font-size: 24px;
+    background: none;
+    border: none;
+    padding: 10px;
+    outline: none;
+  }
+  
+  .load-more {
+    cursor: pointer;
+    font-size: 24px;
+    background: none;
+    border: none;
+    padding: 10px;
+    outline: none;
+  }
+  
+
+
+  .btn-arrows {
+    cursor: pointer;
+    font-size: 24px;
+    background-color: #808080; /* 灰色背景 */
+    color: white; /* 为了确保按钮文字可见，设置文字颜色为白色 */
+    border: none;
+    padding: 10px 20px; /* 增加左右的padding以获得更好的视觉效果 */
+    outline: none;
+    display: inline-block; /* 使按钮水平居中显示 */
+    margin: 5px; /* 添加一些外边距 */
+    border-radius: 5px; /* 添加圆角 */
+    transition: background-color 0.3s ease; /* 平滑背景色过渡效果 */
+  }
+  
+  .btn-arrows:hover {
+    background-color: #696969; /* 鼠标悬停时的背景色 */
+  }
+  
