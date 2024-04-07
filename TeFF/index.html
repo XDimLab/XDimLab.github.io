@@ -128,34 +128,55 @@
             </div>
         </div>
 
-        <div class="row">
+        <!-- <div class="row">
             <div class="col-md-8 col-md-offset-2">
-                <!-- </video>
-                <video id="v0" width="100%" autoplay loop muted controls>
-                    <source src="../VeRi3d/assets/videos/teaser.mp4" type="video/mp4" />
-                </video> -->
+
                 <image src="./assets/img/teaser_final.png" class="img-responsive" alt="overview"><br>
                  <div class="col-md-10 col-md-offset-1 text-center">
-                <!-- <b>Controllable 3D-aware Image Synthesis (top) & Panoptic Prior (bottom)</b></div> -->
-
 
             </div>
+        </div> -->
+        
+        
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+            </video>
+                <video id="v0" width="100%" autoplay loop muted controls>
+                    <source src="./assets/videos/overview.mp4" type="video/mp4" />
+            </video>     
+
         </div>
 
         <div class="row">
-            <div class="col-md-10 col-md-offset-1">
+            <div class="col-md-8 col-md-offset-2">
                 <h2 class="col-md-12 text-center">
                     <b>Abstract</b>
                 </h2>
-                <image src="./assets/img/method_v3.png" class="img-responsive" alt="overview"><br>
-                <image src="./assets/img/method_pose_v3_webpage.png" class="img-responsive" alt="overview"><br>
+                <image src="./assets/img/teaser_final.png" class="img-responsive" alt="overview"><br>
                     <p class="text-justify">
                         Collecting accurate camera poses of training images has been shown to well serve the learning of 3D-aware generative adversarial networks (GANs) yet can be quite expensive in practice. This work targets learning 3D-aware GANs from unposed images, for which we propose to perform on-the-fly pose estimation of training images with a learned template feature field (TeFF). Concretely, in addition to a generative radiance field as in previous approaches, we ask the generator to also learn a field from 2D semantic features while sharing the density from the radiance field. Such a framework allows us to acquire a canonical 3D feature template leveraging the dataset mean discovered by the generative model, and further efficiently estimate the pose parameters on real data. Experimental results on various challenging datasets demonstrate the superiority of our approach over state-of-the-art alternatives from both the qualitative and the quantitative perspectives.
                     </p>
             </div>
         </div>
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h2 class="col-md-12 text-center">
+                    <b>How it works</b>
+                </h2>
+                <image src="./assets/img/method_v3.png" class="img-responsive" alt="overview"><br>
+                <image src="./assets/img/method_pose_v3_webpage.png" class="img-responsive" alt="overview"><br>
+                    <p class="text-justify">
+                        We augment the generative radiance field with a semantic feature field, enabling estimating camera poses of real images on the fly to facilitate the 3D-aware GAN training. Specifically, we map a randomly sampled noise vector to a radiance field and a semantic feature field. By taking the mean shape of the feature field, we obtain a 3D template feature field. This allows us to perform efficient 2D-3D pose estimation to estimate camera poses of real images, which are in turn fed into the generator to perform volume rendering.
+                    </p>
+                    <p class="text-justify">
+                        We leverage the template feature field to estimate camera poses of 2D real images. We discretize the azimuth θ and elevation φ angles and render the feature field from these discretized camera poses. Then we use phase correlation to estimate the scale and the in-plane rotation in the 2D image space and warp each of the rendered templates based on the solution. We calculate the mean square error between the warped rendering and the real feature and further obtain the probability distribution function of the camera pose. Finally, we sample the camera pose using inverse sampling.
+
+                    </p>
+            </div>
+        </div>
         
-        <h2 class="col-md-12 text-center">
+        <!-- <h2 class="col-md-12 text-center">
             Overview
         </h2>
 
@@ -163,10 +184,10 @@
             <div class="col-md-8 col-md-offset-2">
             </video>
                 <video id="v0" width="100%" autoplay loop muted controls>
-                    <source src="./assets/videos/teaser.mp4" type="video/mp4" />
+                    <source src="./assets/videos/overview.mp4" type="video/mp4" />
             </video>     
 
-        </div>
+        </div> -->
 
 
         <h2 class="col-md-12 text-center">
@@ -266,11 +287,11 @@
         </div>
 
 
-        <h3 class="col-md-9 col-md-offset-1">
+        <h3 class="col-md-8 col-md-offset-2">
             Citation
         </h3>
         <div class="row">
-            <div class="col-md-9 col-md-offset-1">
+            <div class="col-md-8 col-md-offset-2">
     <pre style="background-color:#EAEAEA">
 <code>@InProceedings{TeFF,
     author    = {Chen, Xinya and Guo, Hanlei and Bin, Yanrui and Zhang, Shangzhan and Yang, Yuanbo and Wang, Yue and Shen, Yujun and Liao, Yiyi},
@@ -286,7 +307,7 @@
 </div>
 
         <div class="row">
-            <div class="col-md-9 col-md-offset-1">
+            <div class="col-md-8 col-md-offset-2">
                 <h3>
                     Acknowledgements
                 </h3>
