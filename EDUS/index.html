@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="EDUS: Efficient Depth-Guided Urban View Synthesis">
+  <meta name="keywords" content="video depth estimation, diffusion model">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:image:src" content="http://marigoldmonodepth.github.io/images/marigold_logo_square.jpg">
+  <meta name="twitter:title" content="EDUS">
+  <meta name="twitter:description" content="EDUS: Efficient Depth-Guided Urban View Synthesis">
+  <meta name="twitter:creator" content="@jiaxinhuang2001">
+
+  <title>EDUS</title>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-1FWSVCGZTG"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    gtag('config', 'G-1FWSVCGZTG');
+  </script>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./css/bulma.min.css">
+  <link rel="stylesheet" href="./css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./css/twentytwenty.css">
+  <link rel="stylesheet" href="./css/index.css">
+  <link rel="icon" href="./images/favicon.png">
+
+  <script src="./js/jquery-3.2.1.min.js"></script>
+  <script src="./js/jquery.event.move.js"></script>
+  <script src="./js/jquery.twentytwenty.js"></script>
+  <script src="./js/bulma-carousel.min.js"></script>
+  <script src="./js/bulma-slider.min.js"></script>
+  <script src="./js/fontawesome.all.min.js"></script>
+
+  <!--MathJax-->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    };
+  </script>
+  <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">EDUS: Efficient Depth-Guided Urban View Synthesis</h1>
+          <!-- <h3 class="title has-text-centered"></h3> -->
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="" target="_blank" rel="noopener noreferrer">
+                Sheng Miao</a><sup>1*</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://jaceyhuang.github.io/" target="_blank" rel="noopener noreferrer">
+                Jiaxin Huang</a><sup>1*</sup>,
+            </span>
+            <span class="author-block">
+              <a href="" target="_blank" rel="noopener noreferrer">
+                Dongfeng Bai</a><sup>2</sup>,
+            </span>
+            <span class="author-block">
+              <a href="" target="_blank" rel="noopener noreferrer">
+                Weichao Qiu</a><sup>2</sup>,
+            </span>
+            <span class="author-block">
+              <a href="" target="_blank" rel="noopener noreferrer">
+                Bingbing Liu</a><sup>2</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://www.cvlibs.net/" target="_blank" rel="noopener noreferrer">
+                Andreas Geiger</a><sup>3,4</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://yiyiliao.github.io/" target="_blank" rel="noopener noreferrer">
+                Yiyi Liao</a><sup>1†</sup>
+            </span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><sup>1</sup>Zhejiang University</span>
+            <span class="author-block"><sup>2</sup>Huawei Noah's Ark Lab</span>
+            <span class="author-block"><sup>3</sup>University of Tübingen</span>
+            <span class="author-block"><sup>4</sup>Tübingen AI Center</span>
+          </div>
+          <div class="is-size-6 publication-authors">
+            <span class="author-block"><sup>*</sup>equal contribution; <sup>†</sup>corresponding author</span>
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <span class="link-block">
+                <a href="https://arxiv.org/abs/2406.01493" target="_blank" rel="noopener noreferrer"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fas fa-file-pdf" style="color: orangered"></i>
+                  </span>
+                  <span>Paper</span>
+                </a>
+              </span>
+              <!-- Code Link. -->
+              <span class="link-block">
+                <a href="https://github.com/XDimLab/EDUS" target="_blank" rel="noopener noreferrer"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                </a>
+              </span>
+              <!-- Dataset Link. -->
+              <span class="link-block">
+                <a href="" target="_blank" rel="noopener noreferrer"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <img src="images/database_icon.png">
+                  </span>
+                  <span>Dataset</span>
+                </a>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body" style="margin-bottom: 0px;">
+        <iframe width="840" height="473" src="videos/teaser.mp4" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    </div>
+    <div class="content has-text-justified" style="margin-top: -30px; margin-bottom: 20px;">
+      <p>
+        Recent advances in implicit scene representation enable high-
+        fidelity street view novel view synthesis. However, existing methods op-
+        timize a neural radiance field for each scene, relying heavily on dense
+        training images and extensive computation resources. To mitigate this
+        shortcoming, we introduce a new method called Efficient Depth-Guided
+        Urban View Synthesis (EDUS) for fast feed-forward inference and effi-
+        cient per-scene fine-tuning. Different from prior generalizable methods
+        that infer geometry based on feature matching, EDUS leverages noisy
+        predicted geometric priors as guidance to enable generalizable urban view
+        synthesis from sparse input images. The geometric priors allow us to ap-
+        ply our generalizable model directly in the 3D space, gaining robustness
+        across various sparsity levels. Through comprehensive experiments on
+        the KITTI-360 and Waymo datasets, we demonstrate promising gener-
+        alization abilities on novel street scenes. Moreover, our results indicate
+        that EDUS achieves state-of-the-art performance in sparse view settings
+        when combined with fast test-time optimization.
+      </p>
+    </div>
+  </div>
+</section>
+
+
+<section class="hero teaser is-light is-small">
+  <div class="hero-body">
+    <div class="container">
+      <div class="section-title has-text-centered" style="margin-top: 10px; margin-bottom: 20px;">
+        <h2 class="title is-3">Results Gallery</h2>
+      </div>
+      <div id="results-carousel-horizontal" class="carousel results-carousel">
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-video">
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+              <source src="./videos/kitti360/scene_1.mp4" type="video/mp4">
+              </video> 
+            </div>
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+              <source src="./videos/kitti360/scene_1_depth.mp4" type="video/mp4">
+              </video> 
+            </div>
+          </div>
+        </div>
+        
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-video">
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+              <source src="./videos/kitti360/scene_2.mp4" type="video/mp4">
+              </video> 
+            </div>
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+              <source src="./videos/kitti360/scene_2_depth.mp4" type="video/mp4">
+              </video> 
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-video">
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+              <source src="./videos/kitti360/scene_3.mp4" type="video/mp4">
+              </video> 
+            </div>
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+              <source src="./videos/kitti360/scene_3_depth.mp4" type="video/mp4">
+              </video> 
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-video">
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+              <source src="./videos/kitti360/scene_4.mp4" type="video/mp4">
+              </video> 
+            </div>
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+              <source src="./videos/kitti360/scene_4_depth.mp4" type="video/mp4">
+              </video> 
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-video">
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+              <source src="./videos/kitti360/scene_5.mp4" type="video/mp4">
+              </video> 
+            </div>
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+              <source src="./videos/kitti360/scene_5_depth.mp4" type="video/mp4">
+              </video> 
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-video">
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+              <source src="./videos/kitti360/scene_6.mp4" type="video/mp4">
+              </video> 
+            </div>
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+              <source src="./videos/kitti360/scene_6_depth.mp4" type="video/mp4">
+              </video> 
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="section-title has-text-centered" style="margin-top: 5px; margin-bottom: 15px;">
+        <h2 class="title is-5">Drop50 Feed-forward on KITTI-360</h2>
+      </div>
+
+      <div id="results-carousel-horizontal" class="carousel results-carousel">
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-video">
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+              <source src="./videos/waymo/scene_1.mp4" type="video/mp4">
+              </video> 
+            </div>
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+              <source src="./videos/waymo/scene_1_depth.mp4" type="video/mp4">
+              </video> 
+            </div>
+          </div>
+        </div>
+        
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-video">
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+              <source src="./videos/waymo/scene_2.mp4" type="video/mp4">
+              </video> 
+            </div>
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+              <source src="./videos/waymo/scene_2_depth.mp4" type="video/mp4">
+              </video> 
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="section-title has-text-centered" style="margin-top: 5px; margin-bottom: 15px;">
+        <h2 class="title is-5">Drop50 Zero-shot on Waymo</h2>
+      </div>
+
+      <div id="results-carousel-horizontal" class="carousel results-carousel">
+        
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-image-drop80-1">
+            <div class="cmpcontent">
+              <img src="./images/baselines/drop80/ours.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/baselines/drop80/murf.png">
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-image-drop80-2">
+            <div class="cmpcontent">
+              <img src="./images/baselines/drop80/ours.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/baselines/drop80/ibrnet.png">
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-image-drop80-3">
+            <div class="cmpcontent">
+              <img src="./images/baselines/drop80/ours.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/baselines/drop80/mvsnerf.png">
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="section-title has-text-centered" style="margin-top: 5px; margin-bottom: 15px;">
+        <h2 class="title is-5">Comparison with Baselines on KITTI-360 Drop80 Feed-forward</h2>
+      </div>
+
+      <div id="results-carousel-horizontal" class="carousel results-carousel">
+        
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-image-drop90-1">
+            <div class="cmpcontent">
+              <img src="./images/baselines/drop90/ours.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/baselines/drop90/3dgs.png">
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-image-drop90-2">
+            <div class="cmpcontent">
+              <img src="./images/baselines/drop90/ours.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/baselines/drop90/mixnerf.png">
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-image-drop90-3">
+            <div class="cmpcontent">
+              <img src="./images/baselines/drop90/ours.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/baselines/drop90/dsnerf.png">
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="section-title has-text-centered" style="margin-top: 5px; margin-bottom: 15px;">
+        <h2 class="title is-5">Comparison with Baselines on KITTI-360 Drop90 Test-time Optimization</h2>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+
+<script>
+  $(window).on('load', function() {
+
+    bulmaCarousel.attach('#results-carousel-horizontal', {
+      slidesToScroll: 1,
+      slidesToShow: 2,
+      loop: true,
+      autoplay: true,
+    });
+
+    bulmaCarousel.attach('#results-carousel-vertical', {
+      slidesToScroll: 1,
+      slidesToShow: 5,
+      loop: true,
+      autoplay: true,
+    });
+
+    $(".twentytwenty-container-video").twentytwenty({
+      before_label: 'RGB',
+      after_label: 'Depth',
+      default_offset_pct: 0.6,
+    });
+    $(".twentytwenty-container-image-drop80-1").twentytwenty({
+      before_label: 'Ours',
+      after_label: 'Murf',
+      default_offset_pct: 0.6,
+    });
+    $(".twentytwenty-container-image-drop80-2").twentytwenty({
+      before_label: 'Ours',
+      after_label: 'IBRNet',
+      default_offset_pct: 0.6,
+    });
+    $(".twentytwenty-container-image-drop80-3").twentytwenty({
+      before_label: 'Ours',
+      after_label: 'MVSNeRF',
+      default_offset_pct: 0.6,
+    });
+    $(".twentytwenty-container-image-drop90-1").twentytwenty({
+      before_label: 'Ours',
+      after_label: '3DGS',
+      default_offset_pct: 0.6,
+    });
+    $(".twentytwenty-container-image-drop90-2").twentytwenty({
+      before_label: 'Ours',
+      after_label: 'MixNeRF',
+      default_offset_pct: 0.6,
+    });
+    $(".twentytwenty-container-image-drop90-3").twentytwenty({
+      before_label: 'Ours',
+      after_label: 'DS-NeRF',
+      default_offset_pct: 0.6,
+    });
+  });
+</script>
+
+<!-- <section class="section pt-0" style="margin-top:50px; margin-bottom:0px;">
+  <div class="container is-max-desktop">
+    <img id="method_train" width="100%" src="./images/training_pipeline.png" alt="training pipeline"/>
+          <p>
+            <b>Training pipeline.</b> We add an RGB video conditioning branch to a pre-trained video diffusion model, Stable Video Diffusion, and fine-tune it for consistent depth estimation. 
+            Both the RGB and depth videos are projected to a lower-dimensional latent space using a pre-trained encoder. 
+            The video depth estimator is trained via denoising score matching (DSM). 
+            Our training involves two stages: first, we train the spatial layers with single-frame depths; then, we freeze the spatial layers and train the temporal layers using clips of randomly sampled lengths. 
+            This sequential spatial-temporal fine-tuning approach yields better performance than training the full network.
+          </p>
+
+  </div>
+</section> -->
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <!-- Method. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths" style="margin-top: 30px; margin-bottom: 20px;">
+        <h2 class="title is-3">How it works</h2>
+        <div class="content has-text-justified">
+          <div class="hero-body" style="margin-top: 0px; margin-bottom: -30px;">
+            <img id="method_train" width="100%" src="./images/illustration.png" alt="training pipeline"/>
+          </div>
+
+          <p>
+            <b>Illustration.</b> Left: Most existing generalizable NeRF methods rely on feature
+            matching for recovering the geometry, e.g., by constructing local cost volumes, poten-
+            tially overfitting certain reference camera pose distributions. Right: Our method lifts
+            geometric priors to the 3D space and fuses them into a global volume to be processed
+            by a generalizable network. This enhances robustness as the geometric priors are un-
+            affected by the reference image poses. We show synthesized images and depth maps
+            through a feed-forward inference in the middle.
+          </p>
+
+        </div>
+      </div>
+    </div>
+    <!--/ Method. -->
+  </div>
+</section>
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <!-- Method. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths" style="margin-top: 30px; margin-bottom: 20px;">
+        <h2 class="title is-3">Overall Framework</h2>
+        <div class="content has-text-justified">
+          <div class="hero-body" style="margin-top: 0px; margin-bottom: -30px;">
+            <img id="method_train" width="100%" src="./images/pipeline.png" alt="training pipeline"/>
+          </div>
+
+          <p>
+            <b>Pipeline.</b> Our model takes as input sparse reference images and renders a color
+            image at a target view point. This is achieved by decomposing the scene into three
+            generalizable modules: 1) depth-guided generalizable foreground fields to model the
+            scene within a foreground volume; 2) generalizable background fields to model the
+            background objects and stuff; and 3) generalizable sky fields. Our model is trained on
+            multiple street scenes using RGB supervision and optionally LiDAR supervision. 
+            We further apply sky loss to decompose the sky from the other regions and Lentropy
+            to penalize semi-transparent reconstructions.
+          </p>
+
+        </div>
+      </div>
+    </div>
+    <!--/ Method. -->
+  </div>
+</section>
+
+
+<section class="section pt-0" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">Citation</h2>
+    <!-- <pre class="selectable"><code>@misc{shao2024learning,
+        title={Learning Temporally Consistent Video Depth from Video Diffusion Priors}, 
+        author={Jiahao Shao and Yuanbo Yang and Hongyu Zhou and Youmin Zhang and Yujun Shen and Matteo Poggi and Yiyi Liao},
+        year={2024},
+        eprint={2406.01493},
+        archivePrefix={arXiv},
+        primaryClass={cs.CV}
+  }</code></pre> -->
+  </div>
+</section>
+
+
+<footer class="footer pt-4 pb-0">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            Website template based on
+            <a href="https://github.com/nerfies/nerfies.github.io">
+              Nerfies
+            </a>
+            and licensed under
+            <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">
+              CC-BY-SA-4.0
+            </a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
