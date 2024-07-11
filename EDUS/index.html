@@ -71,7 +71,7 @@
       <div class="columns is-centered">
         <div class="column has-text-centered">
           <h1 class="title is-1 publication-title">EDUS: Efficient Depth-Guided Urban View Synthesis</h1>
-          <!-- <h3 class="title has-text-centered"></h3> -->
+          <h4 class="title has-text-centered">ECCV 2024</h4>
           <div class="is-size-5 publication-authors">
             <span class="author-block">
               <a href="" target="_blank" rel="noopener noreferrer">
@@ -142,6 +142,16 @@
                     <img src="images/database_icon.png">
                   </span>
                   <span>Dataset</span>
+                </a>
+              </span>
+              <!-- Checkpoints Link. -->
+              <span class="link-block">
+                <a href="" target="_blank" rel="noopener noreferrer"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <img src="images/ckpts_icon.png">
+                  </span>
+                  <span>Checkpoints</span>
                 </a>
               </span>
             </div>
@@ -285,7 +295,7 @@
         <h2 class="title is-5">Drop50 Feed-forward on KITTI-360</h2>
       </div>
 
-      <div id="results-carousel-horizontal" class="carousel results-carousel">
+      <div id="results-carousel-horizontal-waymo" class="carousel results-carousel" style="display: flex; justify-content: center;">
 
         <div class="twoitem">
           <div class="twentytwenty-container twentytwenty-container-video">
@@ -317,10 +327,25 @@
           </div>
         </div>
 
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-video">
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+              <source src="./videos/waymo/scene_3.mp4" type="video/mp4">
+              </video> 
+            </div>
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+              <source src="./videos/waymo/scene_3_depth.mp4" type="video/mp4">
+              </video> 
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <div class="section-title has-text-centered" style="margin-top: 5px; margin-bottom: 15px;">
-        <h2 class="title is-5">Drop50 Zero-shot on Waymo</h2>
+        <h2 class="title is-5">Drop50 Zero-shot on Waymo (Pretrained on KITTI-360)</h2>
       </div>
 
       <div id="results-carousel-horizontal" class="carousel results-carousel">
@@ -421,6 +446,13 @@
       autoplay: true,
     });
 
+    bulmaCarousel.attach('#results-carousel-horizontal-waymo', {
+      slidesToScroll: 1,
+      slidesToShow: 3,
+      loop: true,
+      autoplay: true,
+    });
+
     bulmaCarousel.attach('#results-carousel-vertical', {
       slidesToScroll: 1,
       slidesToShow: 5,
@@ -436,32 +468,32 @@
     $(".twentytwenty-container-image-drop80-1").twentytwenty({
       before_label: 'Ours',
       after_label: 'Murf',
-      default_offset_pct: 0.6,
+      default_offset_pct: 0.5,
     });
     $(".twentytwenty-container-image-drop80-2").twentytwenty({
       before_label: 'Ours',
       after_label: 'IBRNet',
-      default_offset_pct: 0.6,
+      default_offset_pct: 0.5,
     });
     $(".twentytwenty-container-image-drop80-3").twentytwenty({
       before_label: 'Ours',
       after_label: 'MVSNeRF',
-      default_offset_pct: 0.6,
+      default_offset_pct: 0.5,
     });
     $(".twentytwenty-container-image-drop90-1").twentytwenty({
       before_label: 'Ours',
       after_label: '3DGS',
-      default_offset_pct: 0.6,
+      default_offset_pct: 0.5,
     });
     $(".twentytwenty-container-image-drop90-2").twentytwenty({
       before_label: 'Ours',
       after_label: 'MixNeRF',
-      default_offset_pct: 0.6,
+      default_offset_pct: 0.5,
     });
     $(".twentytwenty-container-image-drop90-3").twentytwenty({
       before_label: 'Ours',
       after_label: 'DS-NeRF',
-      default_offset_pct: 0.6,
+      default_offset_pct: 0.5,
     });
   });
 </script>
@@ -541,14 +573,12 @@
 <section class="section pt-0" id="BibTeX">
   <div class="container is-max-desktop content">
     <h2 class="title">Citation</h2>
-    <!-- <pre class="selectable"><code>@misc{shao2024learning,
-        title={Learning Temporally Consistent Video Depth from Video Diffusion Priors}, 
-        author={Jiahao Shao and Yuanbo Yang and Hongyu Zhou and Youmin Zhang and Yujun Shen and Matteo Poggi and Yiyi Liao},
-        year={2024},
-        eprint={2406.01493},
-        archivePrefix={arXiv},
-        primaryClass={cs.CV}
-  }</code></pre> -->
+    <pre class="selectable"><code>@inproceedings{EDUS,
+      author = {Sheng Miao and Jiaxin Huang and Dongfeng Bai and Weichao Qiu and Bingbing Liu and Andreas Geiger and Yiyi Liao},
+      title = {EDUS: Efficient Depth-Guided Urban View Synthesis},
+      booktitle = {European Conference on Computer Vision (ECCV)},
+      year = {2024}
+     }</code></pre>
   </div>
 </section>
 
@@ -560,8 +590,8 @@
         <div class="content">
           <p>
             Website template based on
-            <a href="https://github.com/nerfies/nerfies.github.io">
-              Nerfies
+            <a href="https://jhaoshao.github.io/ChronoDepth/">
+              ChronoDepth
             </a>
             and licensed under
             <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">
