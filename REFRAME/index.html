@@ -14,7 +14,6 @@
   </title>
 
 
-
   <!-- bootstrap -->
   <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
@@ -217,16 +216,13 @@ rel="stylesheet">
         <div class="row">
           <div class="col">
             <!-- paper title -->
-            <h2 style="font-size:50px;">
+            <h1 style="font-size:50px;">
               <strong>REFRAME</strong>: <strong>REF</strong>lective Surface<br> <strong>R</strong>e<strong>A</strong>l-Time
               Rendering for <strong>M</strong>obil<strong>E</strong> Devices
-            </h2>
-            
-            <!-- publication -->
-            <!-- <h4 style="color:#6e6e6e;"> ArXiv 2023 </h4> -->
-            <hr>
-            <!-- authors -->
-            <h6> 
+            </h1>
+            <br>
+            <h2 class="title has-text-centered">ECCV 2024</h2>
+            <h4> 
                 <!-- <a href="https://me.kiui.moe/" target="_blank">XXX</a><sup>1</sup>, 
                  <a href="https://hangz-nju-cuhk.github.io/" target="_blank">XXX</a><sup>2</sup>, 
                  <a href="https://charlescxk.github.io/" target="_blank">XXX</a><sup>1</sup>,  -->
@@ -250,11 +246,9 @@ rel="stylesheet">
                     <!-- <span class="author-block"><sup>3</sup>University of Tübingen,</span> -->
                     <!-- <span class="author-block"><sup>4</sup>Tübingen AI Center</span> -->
                   </div>
-                 <br>
-                 <br>
             <!-- <p> <sup>1</sup> XXX University &nbsp; -->
-                <br>
             </p>
+            
             
 
 
@@ -272,12 +266,12 @@ rel="stylesheet">
                   </span>
                   <!-- Code Link. -->
                   <span class="link-block">
-                    <a href="" target="_blank" rel="noopener noreferrer"
+                    <a href="https://github.com/MARVELOUSJI/REFRAME" target="_blank" rel="noopener noreferrer"
                        class="external-link button is-normal is-rounded is-dark">
                       <span class="icon">
                           <i class="fab fa-github"></i>
                       </span>
-                      <span>Code (Coming Soon)</span>
+                      <span>Code</span>
                     </a>
                   </span>
                 </div>
@@ -314,18 +308,10 @@ rel="stylesheet">
           <br>
         </div>
           <p class="text-justify">
-            This work tackles the challenging task of achieving real-time
-novel view synthesis on various scenes, including highly reflective objects
-and unbounded outdoor scenes. Existing real-time rendering methods,
-especially those based on meshes, often have subpar performance in
-modeling surfaces with rich view-dependent appearances. Our key idea
-lies in leveraging meshes for rendering acceleration while incorporating a
-novel approach to parameterize view-dependent information. We decompose
-the color into diffuse and specular, and model the specular color in
-the reflected direction based on a neural environment map. Our method achieves comparable reconstruction
-quality for highly reflective surfaces compared to state-of-the-art offline
-methods, while also efficiently enabling real-time rendering on edge devices
-such as smartphones.
+            This work tackles the challenging task of achieving real-time novel view synthesis for reflective surfaces across various scenes. Existing real-time rendering methods, especially those based on meshes, often have subpar performance in
+modeling surfaces with rich view-dependent appearances. Our key idea lies in leveraging meshes for rendering acceleration while incorporating a novel approach to parameterize view-dependent information. We decompose
+the color into diffuse and specular, and model the specular color in the reflected direction based on a neural environment map. Our method achieves comparable reconstruction quality for highly reflective surfaces compared to state-of-the-art offline
+methods, while also efficiently enabling real-time rendering on edge devices such as smartphones.
           </p>
         </div>
       </div>
@@ -801,6 +787,26 @@ such as smartphones.
     </div>
     </section>
     <br> -->
+  <!-- citing -->
+  <div class="container">
+    <div class="row ">
+      <div class="col-12">
+        <!-- <h3>Citation</h3> -->
+        <h3 class="title has-text-centered">
+          Citation
+         </h3>
+        <hr style="margin-top:0px">
+        <pre style="background-color: #e9eeef;padding: 1.25em 1.5em">
+<code>@article{ji2024reframe,
+  title={REFRAME: Reflective Surface Real-Time Rendering for Mobile Devices},
+  author={Ji, Chaojie and Li, Yufeng and Liao, Yiyi},
+  journal={arXiv preprint arXiv:2403.16481},
+  year={2024}
+}
+</code></pre>
+      </div>
+    </div>
+  </div>
 
   <footer class="text-center" style="margin-bottom:10px; font-size: medium;">
     <hr>
