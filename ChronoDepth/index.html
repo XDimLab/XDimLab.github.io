@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="Learning Temporally Consistent Video Depth from Video Diffusion Priors">
+  <meta name="keywords" content="video depth estimation, diffusion model">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="ChronoDepth">
+  <meta name="twitter:description" content="Learning Temporally Consistent Video Depth from Video Diffusion Priors">
+  <meta name="twitter:creator" content="@jiahaoshao1">
+
+  <title>ChronoDepth: Learning Temporally Consistent Video Depth from Video Diffusion Priors</title>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-1FWSVCGZTG"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    gtag('config', 'G-1FWSVCGZTG');
+  </script>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./css/bulma.min.css">
+  <link rel="stylesheet" href="./css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./css/twentytwenty.css">
+  <link rel="stylesheet" href="./css/index.css">
+  <link rel="icon" href="./images/favicon.png">
+
+  <script src="./js/jquery-3.2.1.min.js"></script>
+  <script src="./js/jquery.event.move.js"></script>
+  <script src="./js/jquery.twentytwenty.js"></script>
+  <script src="./js/bulma-carousel.min.js"></script>
+  <script src="./js/bulma-slider.min.js"></script>
+  <script src="./js/fontawesome.all.min.js"></script>
+
+  <!--MathJax-->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    };
+  </script>
+  <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">Learning Temporally Consistent Video Depth from Video Diffusion Priors</h1>
+          <!-- <h3 class="title has-text-centered"></h3> -->
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="https://jhaoshao.github.io/" target="_blank" rel="noopener noreferrer">
+                Jiahao Shao</a><sup>1*</sup>,
+            </span>
+            <span class="author-block">
+              <a href="" target="_blank" rel="noopener noreferrer">
+                Yuanbo Yang</a><sup>1*</sup>,
+            </span>
+            <span class="author-block">
+              <a href="" target="_blank" rel="noopener noreferrer">
+                Hongyu Zhou</a><sup>1</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://youmi-zym.github.io/" target="_blank" rel="noopener noreferrer">
+                Youmin Zhang</a><sup>2,6</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://shenyujun.github.io/" target="_blank" rel="noopener noreferrer">
+                Yujun Shen</a><sup>4</sup>,
+            </span>
+            <p></p>
+            <span class="author-block">
+              <a href="https://vitorguizilini.github.io/" target="_blank" rel="noopener noreferrer">
+                Vitor Guizilini</a><sup>5</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://yuewang.xyz/" target="_blank" rel="noopener noreferrer">
+                Yue Wang</a><sup>3</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://mattpoggi.github.io/" target="_blank" rel="noopener noreferrer">
+                Matteo Poggi</a><sup>2</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://yiyiliao.github.io/" target="_blank" rel="noopener noreferrer">
+                Yiyi Liao</a><sup>1†</sup>
+            </span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><sup>1</sup>Zhejiang University</span>
+            <span class="author-block"><sup>2</sup>University of Bologna</span>
+            <span class="author-block"><sup>3</sup>University of Southern California</span>
+            <p></p>
+            <span class="author-block"><sup>4</sup>Ant Group</span>
+            <span class="author-block"><sup>5</sup>Toyota Research Institute</span>
+            <span class="author-block"><sup>6</sup>Rock Universe</span>
+          </div>
+          <div class="is-size-6 publication-authors">
+            <span class="author-block"><sup>*</sup>equal contribution; <sup>†</sup>corresponding author</span>
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <span class="link-block">
+                <a href="https://arxiv.org/abs/2406.01493" target="_blank" rel="noopener noreferrer"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fas fa-file-pdf" style="color: orangered"></i>
+                  </span>
+                  <span>Paper</span>
+                </a>
+              </span>
+              <!-- Code Link. -->
+              <span class="link-block">
+                <a href="https://github.com/jhaoshao/ChronoDepth" target="_blank" rel="noopener noreferrer"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                </a>
+              </span>
+              <!-- Colab Link. -->
+              <!-- <span class="link-block">
+                <a href="https://colab.research.google.com/drive/12G8reD13DdpMie5ZQlaFNo2WCGeNUH-u?usp=sharing" target="_blank" rel="noopener noreferrer"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <img src="images/colab.svg">
+                  </span>
+                  <span>&nbsp;Google Colab</span>
+                </a>
+              </span> -->
+              <!-- Hugging Face. -->
+              <span class="link-block">
+                <a href="https://huggingface.co/spaces/jhshao/ChronoDepth" target="_blank" rel="noopener noreferrer"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      &#129303;
+                  </span>
+                  <span>Hugging Face Space</span>
+                </a>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body" style="margin-bottom: 0px;">
+        <iframe width="840" height="473" src="https://www.youtube.com/embed/8W6O_uluTAs?si=AE5v8CBDFnbiQIfK" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    </div>
+    <div class="content has-text-justified" style="margin-top: -30px; margin-bottom: 20px;">
+      <p>
+        <b>TL;DR:</b> <span class="methodname">ChronoDepth</span> addresses the challenge of streamed video depth estimation with video diffusion model.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <!-- Method. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths" style="margin-top: 30px; margin-bottom: 20px;">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+
+          <p>
+            This work addresses the challenge of <b>streamed video depth estimation</b>, which expects not only per-frame accuracy but, more importantly, cross-frame consistency. We argue that no contextual information shared between frames or clips is pivotal in fostering inconsistency. Instead of directly developing a depth estimator from scratch, we reformulate this predictive task into a conditional generation problem to <b>provide contextual information within a clip and across clips</b>. Specifically, we propose a consistent context-aware training and inference strategy for arbitrarily long videos to provide cross-clip context. We sample independent noise levels for each frame within a clip during training while using a sliding window strategy and initializing overlapping frames with previously predicted frames without adding noise. Moreover, We design an effective training strategy to provide context within a clip. Extensive experimental results validate our design choices and demonstrate the superiority of our approach, dubbed <span class="methodname">ChronoDepth</span>.
+          </p>
+
+        </div>
+      </div>
+    </div>
+    <!--/ Method. -->
+  </div>
+</section>
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <!-- Method. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths" style="margin-top: 30px; margin-bottom: 20px;">
+        <div class="content has-text-justified">
+          <div class="hero-body" style="margin-top: 0px; margin-bottom: -30px;">
+            <img id="intuition" width="100%" src="./images/infer_comp.png" alt="inference comparison"/>
+          </div>
+
+          <p>
+            Illustration of different inference strategies for infinitely long videos. (a) Naive sliding window inference; (b) Inference with replacement trick; (c) Our proposed consistent context-aware inference.
+          </p>
+
+        </div>
+      </div>
+    </div>
+    <!--/ Method. -->
+  </div>
+</section>
+
+<h3 class="title has-text-centered">
+  Comparison Gallery
+</h3>
+<section class="hero is-light is-small">
+  <div class="hero-body">
+    <div class="container">
+      <div id="results-carousel-extrap" class="carousel results-carousel">
+
+        <div class="threeitem">
+          <div class="twentytwenty-container twentytwenty-container-left">
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="videos/elephant_rgb.mp4" type="video/mp4">
+                </video> 
+            </div>
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="videos/ours_elephant.mp4" type="video/mp4">
+                </video> 
+            </div>
+          </div>
+
+          <div class="twentytwenty-container twentytwenty-container-left">
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="videos/kitti360_2013_05_28_drive_0000_sync_300_f200_rgb.mp4" type="video/mp4">
+                </video> 
+            </div>
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="videos/ours_kitti360_2013_05_28_drive_0000_sync_300_f200_depth_pred_aligned.mp4" type="video/mp4">
+                </video> 
+            </div>
+          </div>
+
+          <div class="twentytwenty-container twentytwenty-container-left">
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="videos/scannetpp_09c1414f1b_rgb.mp4" type="video/mp4">
+                </video> 
+            </div>
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="videos/ours_scannetpp_09c1414f1b_depth_pred_aligned.mp4" type="video/mp4">
+                </video> 
+            </div>
+          </div>
+
+          <div class="twentytwenty-container twentytwenty-container-left">
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="videos/kitti360_2013_05_28_drive_0006_sync_300_f200_rgb.mp4" type="video/mp4">
+                </video> 
+            </div>
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="videos/ours_kitti360_2013_05_28_drive_0006_sync_300_f200_depth_pred_aligned.mp4" type="video/mp4">
+                </video> 
+            </div>
+          </div>
+
+          <div class="twentytwenty-container twentytwenty-container-left">
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="videos/bonn_rgbd_bonn_balloon_rgb.mp4" type="video/mp4">
+                </video> 
+            </div>
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="videos/ours_bonn_rgbd_bonn_balloon_depth_pred_aligned.mp4" type="video/mp4">
+                </video> 
+            </div>
+          </div>
+
+          <div class="twentytwenty-container twentytwenty-container-left">
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="videos/kitti360_2013_05_28_drive_0010_sync_300_f200_rgb.mp4" type="video/mp4">
+                </video> 
+            </div>
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="videos/ours_kitti360_2013_05_28_drive_0010_sync_300_f200_depth_pred_aligned.mp4" type="video/mp4">
+                </video> 
+            </div>
+          </div>
+
+        </div>
+
+        <div class="threeitem">
+          <div class="twentytwenty-container twentytwenty-container-right1">
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="videos/ours_elephant.mp4" type="video/mp4">
+                </video> 
+            </div>
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="videos/marigold_elephant.mp4" type="video/mp4">
+                </video> 
+            </div>
+          </div>
+
+          <div class="twentytwenty-container twentytwenty-container-right1">
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="videos/ours_kitti360_2013_05_28_drive_0000_sync_300_f200_depth_pred_aligned.mp4" type="video/mp4">
+                </video> 
+            </div>
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="videos/marigold_kitti360_2013_05_28_drive_0000_sync_300_f200_depth_pred_aligned.mp4" type="video/mp4">
+                </video> 
+            </div>
+          </div>
+
+          <div class="twentytwenty-container twentytwenty-container-right2">
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="videos/ours_scannetpp_09c1414f1b_depth_pred_aligned.mp4" type="video/mp4">
+                </video> 
+            </div>
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="videos/DC_scannetpp_09c1414f1b_depth_pred_aligned.mp4" type="video/mp4">
+                </video> 
+            </div>
+          </div>
+
+          <div class="twentytwenty-container twentytwenty-container-right2">
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="videos/ours_kitti360_2013_05_28_drive_0006_sync_300_f200_depth_pred_aligned.mp4" type="video/mp4">
+                </video> 
+            </div>
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="videos/DC_kitti360_2013_05_28_drive_0006_sync_300_f200_depth_pred_aligned.mp4" type="video/mp4">
+                </video> 
+            </div>
+          </div>
+
+          <div class="twentytwenty-container twentytwenty-container-right3">
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="videos/ours_bonn_rgbd_bonn_balloon_depth_pred_aligned.mp4" type="video/mp4">
+                </video> 
+            </div>
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="videos/DA2_bonn_rgbd_bonn_balloon_depth_pred_aligned.mp4" type="video/mp4">
+                </video> 
+            </div>
+          </div>
+
+          <div class="twentytwenty-container twentytwenty-container-right3">
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="videos/ours_kitti360_2013_05_28_drive_0010_sync_300_f200_depth_pred_aligned.mp4" type="video/mp4">
+                </video> 
+            </div>
+            <div class="cmpcontent">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="videos/DA2_kitti360_2013_05_28_drive_0010_sync_300_f200_depth_pred_aligned.mp4" type="video/mp4">
+                </video> 
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  $(window).on('load', function() {
+    bulmaCarousel.attach('#results-carousel-horizontal', {
+      slidesToScroll: 1,
+      slidesToShow: 1,
+      loop: true,
+      autoplay: true,
+    });
+
+    bulmaCarousel.attach('#results-carousel-extrap', {
+      slidesToScroll: 2,
+      slidesToShow: 2,
+      // loop: true,
+      // autoplay: true,
+    });
+
+    bulmaCarousel.attach('#results-carousel-benchmark', {
+      slidesToScroll: 1,
+      slidesToShow: 3,
+      // loop: true,
+      autoplay: true,
+    });
+
+    $(".twentytwenty-container-left").twentytwenty({
+      before_label: 'Input',
+      after_label: 'Ours',
+      default_offset_pct: 0.5,
+    });
+    $(".twentytwenty-container-right1").twentytwenty({
+      before_label: 'Ours',
+      after_label: 'Marigold',
+      default_offset_pct: 0.5,
+    });
+    $(".twentytwenty-container-right2").twentytwenty({
+      before_label: 'Ours',
+      after_label: 'DepthCrafter',
+      default_offset_pct: 0.5,
+    });
+    $(".twentytwenty-container-right3").twentytwenty({
+      before_label: 'Ours',
+      after_label: 'DepthAnythingV2',
+      default_offset_pct: 0.5,
+    });
+  });
+</script>
+
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <!-- Method. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths" style="margin-top: 30px; margin-bottom: 20px;">
+        <h2 class="title is-3">Overall Framework</h2>
+        <div class="content has-text-justified">
+          <div class="hero-body" style="margin-top: 0px; margin-bottom: -30px;">
+            <img id="method_train" width="100%" src="./images/training_pipeline.png" alt="training pipeline"/>
+          </div>
+
+          <p>
+            <b>Training pipeline.</b>
+            We add an RGB video conditioning branch to a pre-trained video diffusion model (SVD) and fine-tune it via DSM for depth estimation, by sampling different noise levels for each frame.
+            Our training involves two stages: 1) we train the spatial layers with single-frame depths; 2) we freeze spatial layers and train the temporal layers on clips of random lengths.
+          </p>
+
+          <div class="hero-body" style="margin-top: 0px; margin-bottom: -30px;">
+            <img id="method_infer" width="100%" src="./images/inference_pipeline.png" alt="inference scheme"/>
+          </div>
+          
+          <p>
+            <!-- <b>Inference pipeline.</b> We explore two inference strategies. \(\textit{Option 1}\): Separate Inference involves dividing the videos into non-overlapping clips and predicting their depths individually. \(\textit{Option 2}\): Temporal Inpaint Inference denotes inpainting later frames \(\mathbf{z}^{(\mathbf{z}_{[W:T]})}\) in a clip based on the previous frames' prediction \(\mathbf{z}^{(\mathbf{z}_{[0:W]})}\). Our proposed temporal inpaint enhances temporal consistency. -->
+            We explore an inference strategy for infinately long videos. We segment the video into several $F$-frame clips with overlap $W$ and use a sliding window strategy for inference. Besides, we initialize overlapping $W$ frames with previously predicted depth frames $\hat{\mathbf{z}}^{(\mathbf{d}_{0:W})}_0$ to support consistent context information during each sampling step.
+          </p>
+
+
+        </div>
+      </div>
+    </div>
+    <!--/ Method. -->
+  </div>
+</section>
+
+
+<section class="section pt-0" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">Citation</h2>
+    <pre class="selectable"><code>@misc{shao2024learning,
+        title={Learning Temporally Consistent Video Depth from Video Diffusion Priors}, 
+        author={Jiahao Shao and Yuanbo Yang and Hongyu Zhou and Youmin Zhang and Yujun Shen and Matteo Poggi and Yiyi Liao},
+        year={2024},
+        eprint={2406.01493},
+        archivePrefix={arXiv},
+        primaryClass={cs.CV}
+  }</code></pre>
+  </div>
+</section>
+
+
+<footer class="footer pt-4 pb-0">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            Website template based on
+            <a href="https://github.com/nerfies/nerfies.github.io">
+              Nerfies
+            </a>
+            and licensed under
+            <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">
+              CC-BY-SA-4.0
+            </a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
