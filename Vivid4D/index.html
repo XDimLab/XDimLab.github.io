@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="Vivid4D: Improving 4D Reconstruction from Monocular Video by Video Inpainting">
+  <!-- <meta name="keywords" content="video depth estimation, diffusion model"> -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Vivid4D">
+  <meta name="twitter:description" content="Improving 4D Reconstruction from Monocular Video by Video Inpainting">
+  <!-- <meta name="twitter:creator" content="@jiahaoshao1"> -->
+
+  <title>Vivid4D</title>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-1FWSVCGZTG"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    gtag('config', 'G-1FWSVCGZTG');
+  </script>
+
+  <script type="text/javascript" async
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
+  </script>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./css/bulma.min.css">
+  <link rel="stylesheet" href="./css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./css/twentytwenty.css">
+  <link rel="stylesheet" href="./css/index.css">
+  <link rel="icon" href="./images/favicon.ico">
+
+  <script src="./js/jquery-3.2.1.min.js"></script>
+  <script src="./js/jquery.event.move.js"></script>
+  <script src="./js/jquery.twentytwenty.js"></script>
+  <script src="./js/bulma-carousel.min.js"></script>
+  <script src="./js/bulma-slider.min.js"></script>
+  <script src="./js/fontawesome.all.min.js"></script>
+
+  <!--MathJax-->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    };
+  </script>
+  <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    .video-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .video-wrapper video {
+        display: block;
+        width: 100%;
+    }
+    
+    .video-label {
+        position: absolute;
+        bottom: 10px; /* 贴近底部 */
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 14px;
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+    }
+    
+    .video-wrapper.left .video-label {
+        left: 10px; /* 贴近左侧 */
+    }
+    
+    .video-wrapper.right .video-label {
+        right: 10px; /* 贴近右侧 */
+    }
+    
+    .video-wrapper:hover .video-label {
+        opacity: 1;
+    }
+    </style>
+
+</head>
+<body>
+
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">Vivid4D: Improving 4D Reconstruction from Monocular Video by Video Inpainting</h1>
+          <!-- <h3 class="title has-text-centered">CVPR 2025</h3> -->
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="https://jaceyhuang.github.io/" target="_blank" rel="noopener noreferrer">
+                Jiaxin Huang</a><sup>1</sup>,
+            </span>
+            <span class="author-block">
+              <a href="" target="_blank" rel="noopener noreferrer">
+                Sheng Miao</a><sup>1</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://ybbbbt.com/" target="_blank" rel="noopener noreferrer">
+                BangBang Yang</a><sup>2</sup>,
+            </span>
+            <span class="author-block">
+              <a href="" target="_blank" rel="noopener noreferrer">
+                Yuewen Ma</a><sup>2</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://yiyi.liao.github.io/" target="_blank" rel="noopener noreferrer">
+                Yiyi Liao</a><sup>1†</sup>
+            </span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><sup>1</sup>Zhejiang University</span>
+            <span class="author-block"><sup>2</sup>ByteDance PICO</span>
+          </div>
+          <div class="is-size-6 publication-authors">
+            <span class="author-block"><sup>†</sup>corresponding author</span>
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <span class="link-block">
+                <a href="" target="_blank" rel="noopener noreferrer"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fas fa-file-pdf" style="color: orangered"></i>
+                  </span>
+                  <span>Paper</span>
+                </a>
+              </span>
+              <!-- Code Link. -->
+              <span class="link-block">
+                <a href="" target="_blank" rel="noopener noreferrer"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code (Coming soon)</span>
+                </a>
+              </span>
+              <!-- Colab Link. -->
+              <!-- <span class="link-block">
+                <a href="https://colab.research.google.com/drive/12G8reD13DdpMie5ZQlaFNo2WCGeNUH-u?usp=sharing" target="_blank" rel="noopener noreferrer"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <img src="images/colab.svg">
+                  </span>
+                  <span>&nbsp;Google Colab</span>
+                </a>
+              </span> -->
+              <!-- Hugging Face. -->
+              <!-- <span class="link-block">
+                <a href="https://huggingface.co/spaces/jhshao/ChronoDepth" target="_blank" rel="noopener noreferrer"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      &#129303;
+                  </span>
+                  <span>Hugging Face Space🔥🔥</span>
+                </a>
+              </span> -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <!-- <div class="hero-body" style="margin-bottom: 0px;">
+        <iframe width="840" height="473" src="videos/demo.mp4" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    </div> -->
+    <div class="content has-text-justified" style="margin-top: -30px; margin-bottom: 20px;">
+      <p>
+        <b>TL;DR:</b> <span class="methodname">Vivid4D</span> addresses the challenge of reconstructing dynamic scenes from casual monocular videos with video diffusion model.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <!-- Method. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths" style="margin-top: 30px; margin-bottom: 20px;">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+
+          <p>
+            Reconstructing 4D dynamic scenes from <b>casually captured monocular videos</b> is valuable but highly challenging, as each timestamp is observed from a single viewpoint. We introduce <span class="methodname">Vivid4D</span>, a novel approach that enhances 4D monocular video synthesis by augmenting observation views — synthesizing multi-view videos from a monocular input. Unlike existing methods that either solely leverage geometric priors for supervision or use generative priors while overlooking geometry, we integrate both. This reformulates view augmentation as a video inpainting task, where observed views are warped into new viewpoints based on monocular depth priors. To achieve this, we train a video inpainting model on unposed web videos with synthetically generated masks that mimic warping occlusions, ensuring spatially and temporally consistent completion of missing regions. To further mitigate inaccuracies in monocular depth priors, we introduce an iterative view augmentation strategy and a robust reconstruction loss. Experiments demonstrate that our method effectively improves monocular 4D scene reconstruction and completion.
+          </p>
+
+        </div>
+      </div>
+    </div>
+    <!--/ Method. -->
+  </div>
+</section>
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <!-- Method. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths" style="margin-top: 30px; margin-bottom: 20px;">
+        <div class="content has-text-justified">
+          <div class="hero-body" style="margin-top: 0px; margin-bottom: -30px;">
+            <img id="intuition" style="transform: scale(1.); object-fit: contain; width: 100%;" src="./images/teaser.png" alt="teaser"/>
+          </div>
+
+          <p>
+            <b>Illustration.</b> We improve dynamic scene reconstruction from casually captured monocular videos by synthesizing augmented
+            views. Our approach integrates both geometric and generative priors to reformulate the video augmentation as a video inpainting task. This enables our method to effectively complete invisible regions in the scene and enhance reconstruction quality.
+          </p>
+
+        </div>
+      </div>
+    </div>
+    <!--/ Method. -->
+  </div>
+</section>
+
+<h3 class="title has-text-centered">
+  Comparison Gallery
+</h3>
+<section class="hero is-light is-small">
+  <div class="hero-body">
+    <div class="container">
+      <div id="results-carousel-extrap" class="carousel results-carousel">
+
+        <div class="threeitem">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin-bottom: 10px; margin-left: 5px;">
+            <div class="video-wrapper left">
+                <video autoplay muted loop>
+                    <source src="videos/3dprinter/viewcrafter.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">ViewCrafter</div>
+            </div>
+            <div class="video-wrapper right">
+                <video autoplay muted loop>
+                    <source src="videos/3dprinter/ours.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Ours</div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin-bottom: 10px; margin-left: 5px;">
+            <div class="video-wrapper left">
+                <video autoplay muted loop>
+                    <source src="videos/paper_windmill/cococo.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">CoCoCo</div>
+            </div>
+            <div class="video-wrapper right">
+                <video autoplay muted loop>
+                    <source src="videos/paper_windmill/ours.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Ours</div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin-bottom: 10px; margin-left: 5px;">
+            <div class="video-wrapper left">
+                <video autoplay muted loop>
+                    <source src="videos/teddy/som.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Shape of Motion</div>
+            </div>
+            <div class="video-wrapper right">
+                <video autoplay muted loop>
+                    <source src="videos/teddy/ours.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Ours</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="threeitem">
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin-bottom: 10px; margin-left: 5px;">
+            <div class="video-wrapper left">
+                <video autoplay muted loop>
+                    <source src="videos/chicken/stereocrafter.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">StereoCrafter</div>
+            </div>
+            <div class="video-wrapper right">
+                <video autoplay muted loop>
+                    <source src="videos/chicken/ours.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Ours</div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin-bottom: 10px; margin-left: 5px;">
+            <div class="video-wrapper left">
+                <video autoplay muted loop>
+                    <source src="videos/handwavy/4dgs.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">4D GS</div>
+            </div>
+            <div class="video-wrapper right">
+                <video autoplay muted loop>
+                    <source src="videos/handwavy/ours.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Ours</div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin-bottom: 10px; margin-left: 5px;">
+            <div class="video-wrapper left">
+                <video autoplay muted loop>
+                    <source src="videos/backpack/som.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Shape of Motion</div>
+            </div>
+            <div class="video-wrapper right">
+                <video autoplay muted loop>
+                    <source src="videos/backpack/ours.mp4" type="video/mp4">
+                </video>
+                <div class="video-label">Ours</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  $(window).on('load', function() {
+    bulmaCarousel.attach('#results-carousel-horizontal', {
+      slidesToScroll: 1,
+      slidesToShow: 1,
+      loop: true,
+      autoplay: true,
+    });
+
+    bulmaCarousel.attach('#results-carousel-extrap', {
+      slidesToScroll: 2,
+      slidesToShow: 2,
+      // loop: true,
+      // autoplay: true,
+    });
+
+    bulmaCarousel.attach('#results-carousel-benchmark', {
+      slidesToScroll: 1,
+      slidesToShow: 3,
+      // loop: true,
+      autoplay: true,
+    });
+  });
+</script>
+
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <!-- Method. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths" style="margin-top: 30px; margin-bottom: 20px;">
+        <h2 class="title is-3">Pipeline</h2>
+        <div class="content has-text-justified">
+          <div class="hero-body" style="margin-top: 40px; margin-bottom: -10px;">
+            <img id="method_train" width="100%" style="transform: scale(1.15); object-fit: contain; width: 100%;" src="./images/pipeline.png" alt="pipeline"/>
+          </div>
+
+          <p>
+            <b>Pipeline.</b>
+            Given an input monocular video, we first perform sparse reconstruction to obtain camera poses and align monocular depth to metric scale, forming an initial data buffer \(D_0\). In each iterative view augmentation step, we select frames at each timestamp from the previous buffer \(D_{j-1}\) and warp them to novel viewpoints using pre-defined camera poses \(T\), creating new perspective videos with continuous invisible region masks. These masked videos, along with binary masks and an anchor video, are fed into our pre-trained anchor-conditioned video inpainting diffusion model to produce completed novel-view videos. We update the buffer \(D_j\) with these enhanced videos, their metric depths and poses. Finally, both the original monocular video and all synthesized multi-view videos are used to supervise 4D scene reconstruction.
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--/ Method. -->
+  </div>
+</section>
+
+
+<section class="section pt-0" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">Citation</h2>
+    <pre class="selectable"><code>
+      @misc{shao2024learningtemporallyconsistentvideo,
+      title={Learning Temporally Consistent Video Depth from Video Diffusion Priors}, 
+      author={Jiahao Shao and Yuanbo Yang and Hongyu Zhou and Youmin Zhang and Yujun Shen and Vitor Guizilini and Yue Wang and Matteo Poggi and Yiyi Liao},
+      year={2024},
+      eprint={2406.01493},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2406.01493}, 
+  }</code></pre>
+  </div>
+</section>
+
+
+<footer class="footer pt-4 pb-0">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            Website template based on
+            <a href="https://github.com/nerfies/nerfies.github.io">
+              Nerfies
+            </a>
+            and licensed under
+            <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">
+              CC-BY-SA-4.0
+            </a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
