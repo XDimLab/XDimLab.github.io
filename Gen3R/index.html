@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <!-- Meta tags for social media banners, these should be filled in appropriatly as they are your "business card" -->
+  <!-- Replace the content tag with appropriate information -->
+  <!-- <meta name="description" content="DESCRIPTION META TAG">
+  <meta property="og:title" content="SOCIAL MEDIA TITLE TAG"/>
+  <meta property="og:description" content="SOCIAL MEDIA DESCRIPTION TAG TAG"/>
+  <meta property="og:url" content="URL OF THE WEBSITE"/> -->
+  <!-- Path to banner image, should be in the path listed below. Optimal dimenssions are 1200X630-->
+  <!-- <meta property="og:image" content="static/image/your_banner_image.png" />
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+
+
+  <meta name="twitter:title" content="TWITTER BANNER TITLE META TAG">
+  <meta name="twitter:description" content="TWITTER BANNER DESCRIPTION META TAG"> -->
+  <!-- Path to banner image, should be in the path listed below. Optimal dimenssions are 1200X600-->
+  <!-- <meta name="twitter:image" content="static/images/your_twitter_banner_image.png">
+  <meta name="twitter:card" content="summary_large_image"> -->
+  <!-- Keywords for your paper to be indexed by-->
+  <!-- <meta name="keywords" content="KEYWORDS SHOULD BE PLACED HERE">
+  <meta name="viewport" content="width=device-width, initial-scale=1"> -->
+
+
+  <title>Gen3R: 3D Scene Generation Meets Feed-Forward Reconstruction</title>
+  <link rel="icon" type="image/x-icon" href="static/images/favicon.ico">
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+  rel="stylesheet">
+
+  <link rel="stylesheet" href="static/css/bulma.min.css">
+  <link rel="stylesheet" href="static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="static/css/index.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://documentcloud.adobe.com/view-sdk/main.js"></script>
+  <script defer src="static/js/fontawesome.all.min.js"></script>
+  <script src="static/js/bulma-carousel.min.js"></script>
+  <script src="static/js/bulma-slider.min.js"></script>
+  <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+	    tex2jax: {
+	        inlineMath: [['$','$'], ['\\(','\\)']],
+	        processEscapes: true
+	    }
+	});
+    </script>
+  <script src="static/js/index.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      bulmaCarousel.attach('.carousel', {
+        autoplay: false,
+        loop: true,
+        pagination: false
+      });
+    });
+  </script>
+</head>
+<body>
+  <style>
+        /* Placeholder background for missing thumbnail images */
+        .thumbnail-item img[src*="placeholder"] {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            object-fit: cover;
+        }
+
+        .thumbnail-item img {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        iframe {
+          border-radius: 0.5em;
+          width: 27.5em;
+          height: 27.5em;
+          border: none;
+          box-shadow: 0 0 1em 0em rgba(0, 0, 0, 0.15);
+        }
+  </style>
+
+
+  <section class="hero">
+    <div class="video-wrapper header">
+
+      <div class="bg-overlay"></div>
+        <video playsinline autoplay muted loop preload="auto" poster="./static/images/background.png">
+          <source src="./static/videos/background.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+
+    <div class="hero-body">
+      <div class="container">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <h1 class="xtitle is-1 publication-title">
+                <span class="c1">G</span><span class="c2">e</span><span class="c3">n</span><span class="c4">3</span><span class="c5">R</span>: 3D Scene Generation Meets Feed-Forward Reconstruction</h1>
+            <div class="is-size-5 publication-authors">
+              <!-- Paper authors -->
+              <span class="author-block">
+                <a href="https://jaceyhuang.github.io/" target="_blank">Jiaxin Huang</a><sup>1</sup></span>
+                <span class="author-block">
+                  <a href="https://github.com/freemty" target="_blank">Yuanbo Yang</a><sup>1</sup></span>
+                  <span class="author-block">
+                    <a href="https://ybbbbt.com/" target="_blank">BangBang Yang</a><sup>2</sup></span>
+                  <span class="author-block">
+                    <a href="https://scholar.google.com/citations?user=S4HGIIUAAAAJ&hl=en" target="_blank">Lin Ma</a><sup>2</sup></span>
+                  <span class="author-block">
+                    <a href="https://scholar.google.com/citations?user=VG_cdLAAAAAJ" target="_blank">Yuewen Ma</a><sup>2</sup></span>
+                  <span class="author-block">
+                    <a href="https://yiyiliao.github.io/" target="_blank">Yiyi Liao</a><sup>1,†</sup>
+                  </span>
+                  </div>
+
+                  <div class="is-size-5 publication-institutes">
+                    <span class="institute-block">
+                        <sup>1</sup>Zhejiang University <sup>2</sup>Bytedance
+                        <!-- <br>Conferance name and year -->
+                    </span>
+                    <span class="eql-cntrb"><br><sup>†</sup>Corresponding Author</span>
+                  </div>
+
+                  <div class="column has-text-centered">
+                    <div class="publication-links">
+                      <!-- Arxiv PDF link -->
+                      <span class="link-block">
+                        <a href="https://arxiv.org/pdf/<ARXIV PAPER ID>" target="_blank"
+                        class="external-link ">
+                        <span class="icon">
+                          <i class="fas fa-file-pdf"></i>
+                        </span>
+                        <span>Paper</span>
+                      </a>
+                    </span>
+
+                    <!-- Supplementary PDF link -->
+                    <!-- <span class="link-block">
+                      <a href="static/pdfs/supplementary_material.pdf" target="_blank"
+                      class="external-link ">
+                      <span class="icon">
+                        <i class="fas fa-file-pdf"></i>
+                      </span>
+                      <span>Supplementary</span>
+                    </a>
+                  </span> -->
+
+                  <!-- Github link -->
+                  <span class="link-block">
+                    <a href="https://github.com/JaceyHuang/Gen3R" target="_blank"
+                    class="external-link ">
+                    <span class="icon">
+                      <i class="fab fa-github"></i>
+                    </span>
+                    <span>Code</span>
+                  </a>
+                </span>
+
+                <!-- ArXiv abstract Link -->
+                <span class="link-block">
+                  <a href="https://arxiv.org/abs/<ARXIV PAPER ID>" target="_blank"
+                  class="external-link ">
+                  <span class="icon">
+                    <i class="ai ai-arxiv"></i>
+                  </span>
+                  <span>arXiv</span>
+                </a>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+</section>
+
+<!-- Teaser video-->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <div class="teaser-video">
+        <iframe
+          width="100%"
+          height="100%"
+          src="https://www.youtube.com/embed/1ixsS7uQWY4?autoplay=1&mute=1&loop=1&playlist=1ixsS7uQWY4&rel=0&vq=hd1080"
+          title="YouTube video player"
+          frameborder="0"
+          allow="autoplay; encrypted-media"
+          allowfullscreen>
+        </iframe>
+      </div>
+      <h2 class="subtitle has-text-centered">
+        <b>TL;DR</b>: Create multi-quantity geometry with RGB from images via a unified latent space that aligns geometry and appearance.
+      </h2>
+    </div>
+  </div>
+</section>
+<!-- End teaser video -->
+
+<!-- Paper abstract -->
+<section class="section hero is-light">
+  <div class="container is-max-desktop" id="abstract">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            We present <span class="c1">G</span><span class="c2">e</span><span class="c3">n</span><span class="c4">3</span><span class="c5">R</span>, a method that bridges the strong priors of foundational reconstruction models and video diffusion models for scene-level 3D generation. We repurpose the VGGT reconstruction model to produce geometric latents by training an adapter on its tokens, which are regularized to align with the appearance latents of pre-trained video diffusion models. By jointly generating these disentangled yet aligned latents, <span class="c1">G</span><span class="c2">e</span><span class="c3">n</span><span class="c4">3</span><span class="c5">R</span> produces both RGB videos and corresponding 3D geometry, including camera poses, depth maps, and global point clouds. Experiments demonstrate that our approach achieves state-of-the-art results in single- and multi-image conditioned 3D scene generation. Additionally, our method can enhance the robustness of reconstruction by leveraging generative priors, demonstrating the mutual benefit of tightly coupling reconstruction and generative models.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- End paper abstract -->
+
+
+<!-- Interactive Examples -->
+<section id="interactive-examples" class="interactive-results">
+    <div class="container">
+      <h2 class="title is-3">Interactive Examples</h2>
+      
+        <!-- Main Display Area -->
+        <div class="main-display-container">
+          <!-- Loading Indicator for iframe -->
+          <div class="iframe-loader" id="iframeLoader">
+            <div class="loader-spinner"></div>
+            <div class="loader-text">Loading interactive demo...</div>
+          </div>
+          <iframe 
+            id="mainIframe" 
+            class="main-iframe"
+            src="./glb-viewer.html?src=./static/glbs/neuschwanstein.glb">
+          </iframe>
+        </div>
+
+        <div id="results-carousel" class="carousel results-carousel" data-carousel-id="interactive-examples">
+          <div class="item">
+
+          <h3 class="sub-title">
+            3D Generation: <span class="c1">First Frame</span> to 3D
+          </h3>
+        
+          <!-- Thumbnail Gallery -->
+          <div class="thumbnail-gallery">
+            <div class="thumbnail-item active" 
+                  data-src="./glb-viewer.html?src=./static/glbs/neuschwanstein.glb"
+                  onclick="switchIframe(this)">
+              <img src="static/images/neuschwanstein.png" alt="Example 1">
+              <div class="thumbnail-label">Scene 1</div>
+            </div>
+
+            <div class="thumbnail-item" 
+                  data-src="./glb-viewer.html?src=./static/glbs/nano_banana.glb"
+                  data-camera-orbit="-5deg 100deg 0.005m"
+                  onclick="switchIframe(this)">
+              <img src="static/images/nano_banana.png" alt="Example 2">
+              <div class="thumbnail-label">Scene 2</div>
+            </div>
+
+            <div class="thumbnail-item" 
+                  data-src="./glb-viewer.html?src=./static/glbs/knossos.glb"
+                  data-camera-orbit="-2deg 88deg 0.005m"
+                  onclick="switchIframe(this)">
+              <img src="static/images/knossos.png" alt="Example 3">
+              <div class="thumbnail-label">Scene 3</div>
+            </div>
+            
+            <div class="thumbnail-item" 
+                  data-src="./glb-viewer.html?src=./static/glbs/re10k_0036.glb"
+                  onclick="switchIframe(this)">
+              <img src="static/images/re10k_0036.png" alt="Example 4">
+              <div class="thumbnail-label">Scene 4</div>
+            </div>
+
+            <div class="thumbnail-item" 
+                data-src="./glb-viewer.html?src=./static/glbs/re10k_0409.glb"
+                data-camera-orbit="17deg 87deg 0.005m"
+                onclick="switchIframe(this)">
+                <img src="static/images/re10k_0409.png" alt="Example 5">
+                <div class="thumbnail-label">Scene 5</div>
+            </div>
+            
+            <div class="thumbnail-item" 
+                  data-src="./glb-viewer.html?src=./static/glbs/re10k_0447.glb"
+                  onclick="switchIframe(this)">
+              <img src="static/images/re10k_0447.png" alt="Example 6">
+              <div class="thumbnail-label">Scene 6</div>
+            </div>
+            
+            <div class="thumbnail-item" 
+                  data-src="./glb-viewer.html?src=./static/glbs/re10k_1336.glb"
+                  data-camera-orbit="8deg 90deg 0.005m"
+                  onclick="switchIframe(this)">
+              <img src="static/images/re10k_1336.png" alt="Example 7">
+              <div class="thumbnail-label">Scene 7</div>
+            </div>
+            
+            <div class="thumbnail-item" 
+                  data-src="./glb-viewer.html?src=./static/glbs/re10k_1263.glb"
+                  onclick="switchIframe(this)">
+              <img src="static/images/re10k_1263.png" alt="Example 8">
+              <div class="thumbnail-label">Scene 8</div>
+            </div>
+            
+            <div class="thumbnail-item" 
+                  data-src="./glb-viewer.html?src=./static/glbs/re10k_1288.glb"
+                  data-camera-orbit="3deg 105deg 0.005m"
+                  onclick="switchIframe(this)">
+              <img src="static/images/re10k_1288.png" alt="Example 9">
+              <div class="thumbnail-label">Scene 9</div>
+            </div>
+
+            <div class="thumbnail-item" 
+                  data-src="./glb-viewer.html?src=./static/glbs/re10k_0289.glb"
+                  data-camera-orbit="-5deg 90deg 0.005m"
+                  onclick="switchIframe(this)">
+              <img src="static/images/re10k_0289.png" alt="Example 10">
+              <div class="thumbnail-label">Scene 10</div>
+            </div>
+            
+          </div>
+        </div>
+
+        <div class="item">
+
+          <h3 class="sub-title">
+            3D Generation: <span class="c3">First-last Frames</span> to 3D
+          </h3>
+        
+          <!-- Thumbnail Gallery -->
+          <div class="thumbnail-gallery">
+            <div class="thumbnail-item" 
+                  data-src="./glb-viewer.html?src=./static/glbs/manhattan.glb"
+                  data-camera-orbit="0deg 115deg 0.005m"
+                  onclick="switchIframe(this)">
+              <img src="static/images/manhattan.png" alt="Example 1">
+              <div class="thumbnail-label">Scene 1</div>
+            </div>
+
+            <div class="thumbnail-item" 
+                  data-src="./glb-viewer.html?src=./static/glbs/re10k_1460.glb"
+                  data-camera-orbit="-2.5deg 98deg 0.005m"
+                  onclick="switchIframe(this)">
+              <img src="static/images/re10k_1460.png" alt="Example 2">
+              <div class="thumbnail-label">Scene 2</div>
+            </div>
+
+            <div class="thumbnail-item" 
+                  data-src="./glb-viewer.html?src=./static/glbs/re10k_1436.glb"
+                  data-camera-orbit="2.5deg 110deg 0.005m"
+                  onclick="switchIframe(this)">
+              <img src="static/images/re10k_1436.png" alt="Example 3">
+              <div class="thumbnail-label">Scene 3</div>
+            </div>
+
+            <div class="thumbnail-item" 
+                  data-src="./glb-viewer.html?src=./static/glbs/re10k_0389.glb"
+                  data-camera-orbit="-30deg 90deg 0.005m"
+                  onclick="switchIframe(this)">
+              <img src="static/images/re10k_0389.png" alt="Example 4">
+              <div class="thumbnail-label">Scene 4</div>
+            </div>
+
+            <div class="thumbnail-item" 
+                  data-src="./glb-viewer.html?src=./static/glbs/re10k_0943.glb"
+                  data-camera-orbit="-5deg 100deg 0.005m"
+                  onclick="switchIframe(this)">
+              <img src="static/images/re10k_0943.png" alt="Example 5">
+              <div class="thumbnail-label">Scene 5</div>
+            </div>
+
+            <div class="thumbnail-item" 
+                  data-src="./glb-viewer.html?src=./static/glbs/re10k_1419.glb"
+                  data-camera-orbit="-20deg 95deg 0.005m"
+                  onclick="switchIframe(this)">
+              <img src="static/images/re10k_1419.png" alt="Example 6">
+              <div class="thumbnail-label">Scene 6</div>
+            </div>
+            
+            <div class="thumbnail-item" 
+                data-src="./glb-viewer.html?src=./static/glbs/re10k_0824.glb"
+                data-camera-orbit="0deg 95deg 0.005m"
+                onclick="switchIframe(this)">
+                <img src="static/images/re10k_0824.png" alt="Example 7">
+                <div class="thumbnail-label">Scene 7</div>
+            </div>
+            
+            <div class="thumbnail-item" 
+                  data-src="./glb-viewer.html?src=./static/glbs/building.glb"
+                  onclick="switchIframe(this)">
+              <img src="static/images/building.png" alt="Example 8">
+              <div class="thumbnail-label">Scene 8</div>
+            </div>
+            
+            <div class="thumbnail-item" 
+                  data-src="./glb-viewer.html?src=./static/glbs/re10k_0246.glb"
+                  data-camera-orbit="0deg 105deg 0.005m"
+                  onclick="switchIframe(this)">
+              <img src="static/images/re10k_0246.png" alt="Example 9">
+              <div class="thumbnail-label">Scene 9</div>
+            </div>
+            
+            <div class="thumbnail-item" 
+                  data-src="./glb-viewer.html?src=./static/glbs/colosseum.glb"
+                  data-camera-orbit="0deg 95deg 0.005m"
+                  onclick="switchIframe(this)">
+              <img src="static/images/colosseum.png" alt="Example 10">
+              <div class="thumbnail-label">Scene 10</div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="item">
+
+          <h3 class="sub-title">
+            3D Reconstruction: <span class="c5">All Frames</span> to 3D
+          </h3>
+        
+          <!-- Thumbnail Gallery -->
+          <div class="thumbnail-gallery">
+            <div class="thumbnail-item" 
+                  data-src="./glb-viewer.html?src=./static/glbs/triomphe.glb"
+                  onclick="switchIframe(this)">
+              <img src="static/images/triomphe.png" alt="Example 1">
+              <div class="thumbnail-label">Scene 1</div>
+            </div>
+
+            <div class="thumbnail-item" 
+                  data-src="./glb-viewer.html?src=./static/glbs/re10k_0309.glb"
+                  data-camera-orbit="5deg 90deg 0.005m"
+                  onclick="switchIframe(this)">
+              <img src="static/images/re10k_0309.png" alt="Example 2">
+              <div class="thumbnail-label">Scene 2</div>
+            </div>
+
+            <div class="thumbnail-item" 
+                  data-src="./glb-viewer.html?src=./static/glbs/art_museum.glb"
+                  data-camera-orbit="0deg 90deg 0.005m"
+                  onclick="switchIframe(this)">
+              <img src="static/images/art_museum.png" alt="Example 3">
+              <div class="thumbnail-label">Scene 3</div>
+            </div>
+            
+            <div class="thumbnail-item" 
+                  data-src="./glb-viewer.html?src=./static/glbs/re10k_0228.glb"
+                  data-camera-orbit="25deg 88deg 0.005m"
+                  onclick="switchIframe(this)">
+              <img src="static/images/re10k_0228.png" alt="Example 4">
+              <div class="thumbnail-label">Scene 4</div>
+            </div>
+
+            <div class="thumbnail-item" 
+                  data-src="./glb-viewer.html?src=./static/glbs/re10k_0284.glb"
+                  data-camera-orbit="10deg 105deg 0.005m"
+                  onclick="switchIframe(this)">
+              <img src="static/images/re10k_0284.png" alt="Example 5">
+              <div class="thumbnail-label">Scene 5</div>
+            </div>
+
+            <div class="thumbnail-item" 
+                data-src="./glb-viewer.html?src=./static/glbs/re10k_0904.glb"
+                data-camera-orbit="10deg 90deg 0.005m"
+                onclick="switchIframe(this)">
+                <img src="static/images/re10k_0904.png" alt="Example 6">
+                <div class="thumbnail-label">Scene 6</div>
+            </div>
+
+            <div class="thumbnail-item" 
+                data-src="./glb-viewer.html?src=./static/glbs/dl3dv_0220.glb"
+                data-camera-orbit="15deg 100deg 0.005m"
+                onclick="switchIframe(this)">
+                <img src="static/images/dl3dv_0220.png" alt="Example 7">
+                <div class="thumbnail-label">Scene 7</div>
+            </div>
+            
+            <div class="thumbnail-item" 
+                  data-src="./glb-viewer.html?src=./static/glbs/re10k_0782.glb"
+                  data-camera-orbit="10deg 95deg 0.005m"
+                  onclick="switchIframe(this)">
+              <img src="static/images/re10k_0782.png" alt="Example 8">
+              <div class="thumbnail-label">Scene 8</div>
+            </div>
+            
+            <div class="thumbnail-item" 
+                  data-src="./glb-viewer.html?src=./static/glbs/bled_castle.glb"
+                  data-camera-orbit="12deg 95deg 0.005m"
+                  onclick="switchIframe(this)">
+              <img src="static/images/bled_castle.png" alt="Example 9">
+              <div class="thumbnail-label">Scene 9</div>
+            </div>
+            
+            <div class="thumbnail-item" 
+                  data-src="./glb-viewer.html?src=./static/glbs/re10k_0839.glb"
+                  onclick="switchIframe(this)">
+              <img src="static/images/re10k_0839.png" alt="Example 10">
+              <div class="thumbnail-label">Scene 10</div>
+            </div>
+            
+          </div>
+        </div>
+
+      </div>
+    </div>
+</section>
+<!-- End interactive examples -->
+
+
+<!-- Video carousel -->
+<section class="hero is-small">
+  <div class="hero-body">
+    <div class="container">
+      <h2 class="title is-3">Comparisons</h2>
+
+      <!-- Main Video Display -->
+      <div class="main-display-container">
+        <video
+          id="mainVideo"
+          class="main-video"
+          autoplay
+          muted
+          loop
+          playsinline
+        >
+          <source src="static/videos/comp_re10k_0483.mp4" type="video/mp4">
+        </video>
+      </div>
+
+      <div id="results-carousel" class="carousel results-carousel" data-carousel-id="comparison">
+        
+        <div class="item">
+
+          <h3 class="sub-title">
+            3D Generation: <span class="c1">First Frame</span> to 3D
+          </h3>
+
+          <!-- Thumbnail Gallery -->
+          <div class="thumbnail-gallery" id="comp_1view">
+            <div class="thumbnail-item active"
+                data-video="static/videos/comp_re10k_0483.mp4"
+                onclick="switchVideo(this)">
+              <img src="static/images/comp_re10k_0483.png" alt="Comparison 1">
+              <div class="thumbnail-label">Scene 1</div>
+            </div>
+
+            <div class="thumbnail-item"
+                data-video="static/videos/comp_re10k_0127.mp4"
+                onclick="switchVideo(this)">
+              <img src="static/images/comp_re10k_0127.png" alt="Comparison 2">
+              <div class="thumbnail-label">Scene 2</div>
+            </div>
+
+            <div class="thumbnail-item"
+                data-video="static/videos/comp_co3d_0174.mp4"
+                onclick="switchVideo(this)">
+              <img src="static/images/comp_co3d_0174.png" alt="Comparison 3">
+              <div class="thumbnail-label">Scene 3</div>
+            </div>
+
+            <div class="thumbnail-item"
+                data-video="static/videos/comp_co3d_0185.mp4"
+                onclick="switchVideo(this)">
+              <img src="static/images/comp_co3d_0185.png" alt="Comparison 4">
+              <div class="thumbnail-label">Scene 4</div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="item">
+
+          <h3 class="sub-title">
+            3D Generation: <span class="c3">First-last Frames</span> to 3D
+          </h3>
+
+          <!-- Thumbnail Gallery -->
+          <div class="thumbnail-gallery" id="comp_2view">
+            <div class="thumbnail-item"
+                data-video="static/videos/comp_re10k_0314.mp4"
+                onclick="switchVideo(this)">
+              <img src="static/images/comp_re10k_0314.png" alt="Comparison 1">
+              <div class="thumbnail-label">Scene 1</div>
+            </div>
+
+            <div class="thumbnail-item"
+                data-video="static/videos/comp_co3d_0269.mp4"
+                onclick="switchVideo(this)">
+              <img src="static/images/comp_co3d_0269.png" alt="Comparison 2">
+              <div class="thumbnail-label">Scene 2</div>
+            </div>
+
+            <div class="thumbnail-item"
+                data-video="static/videos/comp_co3d_0096.mp4"
+                onclick="switchVideo(this)">
+              <img src="static/images/comp_co3d_0096.png" alt="Comparison 3">
+              <div class="thumbnail-label">Scene 3</div>
+            </div>
+
+          </div>
+        </div>
+        
+        <div class="item">
+
+          <h3 class="sub-title">
+            3D Reconstruction: <span class="c5">All Frames</span> to 3D
+          </h3>
+
+          <!-- Thumbnail Gallery -->
+          <div class="thumbnail-gallery" id="comp_allview">
+            <div class="thumbnail-item"
+                data-video="static/videos/comp_co3d_0236.mp4"
+                onclick="switchVideo(this)">
+              <img src="static/images/comp_co3d_0236.png" alt="Comparison 1">
+              <div class="thumbnail-label">Scene 1</div>
+            </div>
+
+            <div class="thumbnail-item"
+                data-video="static/videos/comp_co3d_0010.mp4"
+                onclick="switchVideo(this)">
+              <img src="static/images/comp_co3d_0010.png" alt="Comparison 2">
+              <div class="thumbnail-label">Scene 2</div>
+            </div>
+
+            <div class="thumbnail-item"
+                data-video="static/videos/comp_co3d_0188.mp4"
+                onclick="switchVideo(this)">
+              <img src="static/images/comp_co3d_0188.png" alt="Comparison 3">
+              <div class="thumbnail-label">Scene 3</div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+<!-- End video carousel -->
+
+
+<!-- More visualizations -->
+<section class="hero is-small">
+  <div class="hero-body">
+    <div class="container">
+      <h2 class="title is-3">More Results</h2>
+
+      <!-- Main Video Display -->
+      <div class="main-display-container">
+        <video
+          id="MoreVideo"
+          class="main-video"
+          autoplay
+          muted
+          loop
+          playsinline
+        >
+          <source src="static/videos/more_nano_banana.mp4" type="video/mp4">
+        </video>
+      </div>
+      
+      <div id="results-carousel" class="carousel results-carousel" data-carousel-id="more-results">
+        
+        <div class="item">
+
+          <h3 class="sub-title">
+            3D Generation: <span class="c1">First Frame</span> to 3D
+          </h3>
+
+          <!-- Thumbnail Gallery -->
+          <div class="thumbnail-gallery" id="more_vis">
+            <div class="thumbnail-item active"
+                data-video="static/videos/more_nano_banana.mp4"
+                onclick="switchVideo_More(this)">
+              <img src="static/images/nano_banana.png" alt="Example 1">
+              <div class="thumbnail-label">Scene 1</div>
+            </div>
+
+            <div class="thumbnail-item"
+                data-video="static/videos/more_knossos.mp4"
+                onclick="switchVideo_More(this)">
+              <img src="static/images/knossos.png" alt="Example 2">
+              <div class="thumbnail-label">Scene 2</div>
+            </div>
+
+            <div class="thumbnail-item"
+                data-video="static/videos/more_re10k_0289.mp4"
+                onclick="switchVideo_More(this)">
+              <img src="static/images/re10k_0289.png" alt="Example 3">
+              <div class="thumbnail-label">Scene 3</div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="item">
+
+          <h3 class="sub-title">
+            3D Generation: <span class="c3">First-last Frames</span> to 3D
+          </h3>
+
+          <!-- Thumbnail Gallery -->
+          <div class="thumbnail-gallery" id="more_vis">
+            <div class="thumbnail-item"
+                data-video="static/videos/more_re10k_0489.mp4"
+                onclick="switchVideo_More(this)">
+              <img src="static/images/more_re10k_0489.png" alt="Example 1">
+              <div class="thumbnail-label">Scene 1</div>
+            </div>
+
+            <div class="thumbnail-item"
+                data-video="static/videos/more_re10k_0428.mp4"
+                onclick="switchVideo_More(this)">
+              <img src="static/images/more_re10k_0428.png" alt="Example 2">
+              <div class="thumbnail-label">Scene 2</div>
+            </div>
+
+            <div class="thumbnail-item"
+                data-video="static/videos/more_colosseum.mp4"
+                onclick="switchVideo_More(this)">
+              <img src="static/images/colosseum.png" alt="Example 3">
+              <div class="thumbnail-label">Scene 3</div>
+            </div>
+
+          </div>
+        </div>
+        
+        <div class="item">
+
+          <h3 class="sub-title">
+            3D Reconstruction: <span class="c5">All Frames</span> to 3D
+          </h3>
+
+          <!-- Thumbnail Gallery -->
+          <div class="thumbnail-gallery" id="more_vis_2">
+            <div class="thumbnail-item"
+                data-video="static/videos/more_re10k_0309.mp4"
+                onclick="switchVideo_More(this)">
+              <img src="static/images/re10k_0309.png" alt="Example 1">
+              <div class="thumbnail-label">Scene 1</div>
+            </div>
+
+            <div class="thumbnail-item"
+                data-video="static/videos/more_art_museum.mp4"
+                onclick="switchVideo_More(this)">
+              <img src="static/images/art_museum.png" alt="Example 2">
+              <div class="thumbnail-label">Scene 2</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- End more visualizations -->
+
+
+<!--BibTex citation -->
+  <section class="section" id="BibTeX">
+    <div class="container is-max-desktop content">
+      <h2 class="title">BibTeX</h2>
+      <pre><code>BibTex Code Here</code></pre>
+    </div>
+</section>
+<!--End BibTex citation -->
+
+
+  <footer class="footer">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+
+          <p>
+            <strong>Acknowledgements:</strong> We thank <a href="https://github.com/vinthony">vinthony</a> for the nice project page template, which is a <a href="https://github.com/vinthony/project-page-template">modification version</a> of <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank">Academic Project Page Template</a>. The interactive 3D model viewer is borrowed from <a href="https://depth-anything-3.github.io/">Depth Anything 3</a>.
+          </p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- Statcounter tracking code -->
+
+<!-- You can add a tracker to track page visits by creating an account at statcounter.com -->
+
+    <!-- End of Statcounter Code -->
+
+  </body>
+  </html>
