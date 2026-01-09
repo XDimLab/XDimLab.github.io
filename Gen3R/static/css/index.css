@@ -395,11 +395,10 @@ a:hover:after{
 }
 
 .teaser .teaser-video video {
-  display: inline-block;
+  display: block;
   width: 100%;
-  height: 100%;
+  height: auto;
   object-fit: cover;
-  vertical-align: middle;
   border-radius: 0;
 }
 
