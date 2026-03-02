@@ -192,13 +192,13 @@ b{
     /* font-weight: 400; */
     /*color: rgb(0, 79, 241);*/
 }
-.subxtitle{
+.conference {
     font-family: Calibri, "Calibri Light", "Segoe UI", Arial, sans-serif;
-    font-size: 36px;
+    font-size: 32px;
     text-align: center;
-    margin: 10px 0;
-    /* font-weight: 400; */
-    /*color: rgb(0, 79, 241);*/
+    /* margin-top: 5px; */
+    margin-bottom: 12px;
+    font-weight: 400;
 }
 
 .posts .teaser{
